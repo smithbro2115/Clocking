@@ -19,8 +19,10 @@ def load_pickle_obj(path):
         return []
 
 
-def add_to_csv_file(path, list_to_write):
+def add_to_csv_file(path, list_to_write, replace):
     new_list = get_list_from_csv(path)
+    if replace:
+        new_list.pop()
     new_list.append(list_to_write)
     with open(path, mode='w', newline='') as file:
         writer = csv.writer(file)
@@ -28,15 +30,23 @@ def add_to_csv_file(path, list_to_write):
             writer.writerow(row)
 
 
-def add_dict_to_csv_file(path, dict_to_write):
+def add_dict_to_csv_file(path, dict_to_write, keyword='name'):
     list_of_dicts = get_dicts_from_csv(path)
-    list_of_dicts.append(dict_to_write)
-    print(list_of_dicts)
+    add_to_list_if_name_not_duplicate(list_of_dicts, dict_to_write, keyword)
     headers = dict_to_write.keys()
     with open(path, 'w') as csv_file:
         writer = csv.DictWriter(csv_file, fieldnames=headers)
         writer.writeheader()
         writer.writerows(list_of_dicts)
+
+
+def add_to_list_if_name_not_duplicate(dict_list, new_dict, keyword):
+    for existing in dict_list:
+        if existing[keyword] == new_dict[keyword]:
+            break
+    else:
+        dict_list.append(new_dict)
+    return dict_list
 
 
 def get_list_from_csv(path):
