@@ -49,6 +49,13 @@ class Gui(MainWindow.Ui_MainWindow):
         return total_time
 
     @property
+    def global_monthly_income(self):
+        seconds_wages = []
+        for clock, wage in zip(self.get_all_clocks(), self.get_all_wages()):
+            seconds_wages.append((clock.total_monthly_time.seconds, wage))
+        return self.calculate_global_monthly_income(seconds_wages)
+
+    @property
     def current_user(self):
         return self._current_user
 
@@ -94,14 +101,12 @@ class Gui(MainWindow.Ui_MainWindow):
             self.categories.append(category)
             self.categoryBox.addItem(category.name, category)
             self.categoryBox.setCurrentIndex(self.categoryBox.findText(category.name))
-            print(self.categories)
 
     def load_categories(self):
         self.categoryBox.clear()
         self.categories = Categories.load_categories(self.current_user, self.totalTimeLabel, self.totalIncomeLabel)
         for category in self.categories:
             self.categoryBox.addItem(category.name, category)
-        print(self.categories)
 
     def user_box_changed(self):
         self.current_user = self.userBox.currentData()
@@ -146,20 +151,43 @@ class Gui(MainWindow.Ui_MainWindow):
     def set_monthly_total_time(self, total):
         if self.globalRadioButton.isChecked():
             total = self.global_monthly_time
+            income = self.global_monthly_income
+        else:
+            income = self.calculate_local_monthly_income(total.seconds)
         seconds = total.seconds
         self.totalTimeLabel.setText(f"Total Time: {format_duration_from_seconds(seconds)}")
-        self.set_monthly_total_income(seconds)
+        self.set_monthly_total_income(income)
 
     def get_all_clocks(self):
         clocks = []
         for category in self.categories:
-            clocks.append(category.clock)
+            clock = category.clock
+            clocks.append(clock)
         return clocks
 
-    def set_monthly_total_income(self, total_seconds):
-        income = total_seconds / 3600 * float(self.current_category.wage)
+    def get_all_wages(self):
+        wages = []
+        for category in self.categories:
+            wage = category.wage
+            wages.append(wage)
+        return wages
+
+    def calculate_global_monthly_income(self, seconds_wages):
+        total_income = 0.00
+        for seconds, wage in seconds_wages:
+            total_income += self.calculate_total_income(seconds, wage)
+        return total_income
+
+    def calculate_local_monthly_income(self, seconds):
+        return self.calculate_total_income(seconds, self.current_category.wage)
+
+    def calculate_total_income(self, seconds, wage):
+        income = seconds / 3600 * float(wage)
         if not income:
             income = 0.00
+        return income
+
+    def set_monthly_total_income(self, income):
         self.totalIncomeLabel.setText("Total Income: " + '${:,.2f}'.format(income))
 
     def set_next_item(self, column, value):
