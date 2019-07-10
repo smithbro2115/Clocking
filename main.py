@@ -38,7 +38,7 @@ class Gui(MainWindow.Ui_MainWindow):
         self.categoryBox.currentIndexChanged.connect(self.category_box_changed)
         self.addUserButton.clicked.connect(self.add_user_button_clicked)
         self.globalRadioButton.clicked.connect(lambda:
-                                               self.set_monthly_total_time(self.current_clock.total_monthly_time))
+                                               self.set_monthly_time_and_income(self.current_clock.total_monthly_time))
 
     @property
     def global_monthly_time(self):
@@ -123,7 +123,7 @@ class Gui(MainWindow.Ui_MainWindow):
         self.current_clock.active = True
         rows = self.current_clock.load()
         self.load_clock_data_into_table(rows)
-        self.set_monthly_total_time(self.current_clock.total_monthly_time)
+        self.set_monthly_time_and_income(self.current_clock.total_monthly_time)
         self.set_button_text(self.current_clock.state)
 
     def load_clock_data_into_table(self, rows):
@@ -136,7 +136,7 @@ class Gui(MainWindow.Ui_MainWindow):
         if self.current_category:
             time = self.current_clock.clock()
             self.set_button_text(self.current_clock.state)
-            self.set_monthly_total_time(self.current_clock.total_monthly_time)
+            self.set_monthly_time_and_income(self.current_clock.total_monthly_time)
             if self.current_clock.state:
                 self.clock_in_table(time)
             else:
@@ -148,15 +148,18 @@ class Gui(MainWindow.Ui_MainWindow):
         else:
             self.clockButton.setText('Clock In')
 
-    def set_monthly_total_time(self, total):
+    def set_monthly_time_and_income(self, total):
         if self.globalRadioButton.isChecked():
             total = self.global_monthly_time
             income = self.global_monthly_income
         else:
             income = self.calculate_local_monthly_income(total.seconds)
+        self.set_monthly_total_time(total)
+        self.set_monthly_total_income(income)
+
+    def set_monthly_total_time(self, total):
         seconds = total.seconds
         self.totalTimeLabel.setText(f"Total Time: {format_duration_from_seconds(seconds)}")
-        self.set_monthly_total_income(income)
 
     def get_all_clocks(self):
         clocks = []
