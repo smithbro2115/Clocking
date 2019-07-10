@@ -5,6 +5,7 @@ import qdarkstyle
 import Categories
 from Users import add_user, load_users, delete_user, edit_user
 from datetime import timedelta, datetime
+from Exporting import make_invoice_excel
 
 
 class Gui(MainWindow.Ui_MainWindow):
@@ -32,6 +33,7 @@ class Gui(MainWindow.Ui_MainWindow):
         self.userAddAction.triggered.connect(self.add_user_button_clicked)
         self.userDeleteAction.triggered.connect(self.delete_user_clicked)
         self.userEditAction.triggered.connect(self.edit_user_clicked)
+        self.actionExport_Invoice.triggered.connect(self.export_invoice)
         self.load_users()
         print(self.categories)
         if self.userBox.currentIndex() < 0:
@@ -46,6 +48,10 @@ class Gui(MainWindow.Ui_MainWindow):
         self.addUserButton.clicked.connect(self.add_user_button_clicked)
         self.globalRadioButton.clicked.connect(lambda:
                                                self.set_monthly_time_and_income(self.current_clock.total_monthly_time))
+
+    def export_invoice(self):
+        if self.current_category:
+            make_invoice_excel(self.current_user, self.categories)
 
     @property
     def global_monthly_time(self):
