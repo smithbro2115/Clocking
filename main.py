@@ -3,6 +3,7 @@ from Gui import MainWindow
 import qdarkstyle
 import Categories
 from Users import add_user, load_users
+from datetime import timedelta, datetime
 
 
 class Gui(MainWindow.Ui_MainWindow):
@@ -12,6 +13,7 @@ class Gui(MainWindow.Ui_MainWindow):
         self._current_user = None
         self._current_category = None
         self.current_clock = None
+        self._global_monthly_time = timedelta()
 
     def setup_additional(self, main_window):
         main_window.setStyleSheet(qdarkstyle.load_stylesheet_pyqt5())
@@ -24,6 +26,7 @@ class Gui(MainWindow.Ui_MainWindow):
         self.clockButton.clicked.connect(self.clock_button_clicked)
         self.addCategoryButton.clicked.connect(self.add_category)
         self.load_users()
+        print(self.categories)
         if self.userBox.currentIndex() < 0:
             self.categoryBox.setEnabled(False)
             self.addCategoryButton.setEnabled(False)
@@ -34,6 +37,16 @@ class Gui(MainWindow.Ui_MainWindow):
         self.userBox.currentIndexChanged.connect(self.user_box_changed)
         self.categoryBox.currentIndexChanged.connect(self.category_box_changed)
         self.addUserButton.clicked.connect(self.add_user_button_clicked)
+        self.globalRadioButton.clicked.connect(lambda:
+                                               self.set_monthly_total_time(self.current_clock.total_monthly_time))
+
+    @property
+    def global_monthly_time(self):
+        clocks = self.get_all_clocks()
+        total_time = timedelta()
+        for clock in clocks:
+            total_time += clock.total_monthly_time
+        return total_time
 
     @property
     def current_user(self):
@@ -76,17 +89,19 @@ class Gui(MainWindow.Ui_MainWindow):
             self.add_user_to_box(user)
 
     def add_category(self):
-        category = Categories.add_category(self.current_user, self.clockTableWidget, self.clockButton, self.totalTimeLabel, self.totalIncomeLabel)
+        category = Categories.add_category(self.current_user, self.totalTimeLabel, self.totalIncomeLabel)
         if category:
             self.categories.append(category)
             self.categoryBox.addItem(category.name, category)
             self.categoryBox.setCurrentIndex(self.categoryBox.findText(category.name))
+            print(self.categories)
 
     def load_categories(self):
         self.categoryBox.clear()
-        self.categories = Categories.load_categories(self.current_user, self.clockTableWidget, self.clockButton, self.totalTimeLabel, self.totalIncomeLabel)
+        self.categories = Categories.load_categories(self.current_user, self.totalTimeLabel, self.totalIncomeLabel)
         for category in self.categories:
             self.categoryBox.addItem(category.name, category)
+        print(self.categories)
 
     def user_box_changed(self):
         self.current_user = self.userBox.currentData()
@@ -101,12 +116,101 @@ class Gui(MainWindow.Ui_MainWindow):
         self.current_clock.active = False
         self.clockTableWidget.setRowCount(0)
         self.current_clock.active = True
-        self.current_clock.load()
-        self.current_clock.set_button_text()
+        rows = self.current_clock.load()
+        self.load_clock_data_into_table(rows)
+        self.set_monthly_total_time(self.current_clock.total_monthly_time)
+        self.set_button_text(self.current_clock.state)
+
+    def load_clock_data_into_table(self, rows):
+        for row in rows:
+            self.clockTableWidget.insertRow(self.clockTableWidget.rowCount())
+            for index, item in enumerate(row):
+                self.set_next_item(index, item)
 
     def clock_button_clicked(self):
         if self.current_category:
-            self.current_clock.clock()
+            time = self.current_clock.clock()
+            self.set_button_text(self.current_clock.state)
+            self.set_monthly_total_time(self.current_clock.total_monthly_time)
+            if self.current_clock.state:
+                self.clock_in_table(time)
+            else:
+                self.clock_out_table(time[0], time[1])
+
+    def set_button_text(self, state):
+        if state:
+            self.clockButton.setText('Clock Out')
+        else:
+            self.clockButton.setText('Clock In')
+
+    def set_monthly_total_time(self, total):
+        if self.globalRadioButton.isChecked():
+            total = self.global_monthly_time
+        seconds = total.seconds
+        self.totalTimeLabel.setText(f"Total Time: {format_duration_from_seconds(seconds)}")
+        self.set_monthly_total_income(seconds)
+
+    def get_all_clocks(self):
+        clocks = []
+        for category in self.categories:
+            clocks.append(category.clock)
+        return clocks
+
+    def set_monthly_total_income(self, total_seconds):
+        income = total_seconds / 3600 * float(self.current_category.wage)
+        if not income:
+            income = 0.00
+        self.totalIncomeLabel.setText("Total Income: " + '${:,.2f}'.format(income))
+
+    def set_next_item(self, column, value):
+        value = self.format_value(value)
+        widget_item = QtWidgets.QTableWidgetItem(str(value))
+        widget_item.setTextAlignment(QtCore.Qt.AlignCenter)
+        self.clockTableWidget.setItem(self.clockTableWidget.rowCount() - 1, column, widget_item)
+
+    def format_value(self, value):
+        try:
+            value = f"{format_time(value.time())}   |   {format_date(value.date())}"
+        except AttributeError:
+            try:
+                value = format_duration_from_seconds_with_seconds(value.seconds)
+            except AttributeError:
+                pass
+        return value
+
+    def clock_in_table(self, time):
+        self.clockTableWidget.insertRow(self.clockTableWidget.rowCount())
+        self.set_next_item(0, time)
+
+    def clock_out_table(self, time, total_time):
+        self.set_next_item(1, time)
+        self.set_next_item(2, total_time)
+
+
+def format_duration_from_seconds(seconds):
+    hours = seconds // 3600
+    seconds = seconds - (hours*3600)
+    minutes = seconds // 60
+    return f"{hours}:{minutes:02}"
+
+
+def format_duration_from_seconds_with_seconds(seconds):
+    hours = seconds // 3600
+    seconds = seconds - (hours*3600)
+    minutes = seconds // 60
+    seconds = seconds - (minutes*60)
+    return f"{hours}:{minutes:02}:{seconds:02}"
+
+
+def format_time(time):
+    return f"{time.hour:01}:{time.minute:02}:{time.second:02}"
+
+
+def format_date(date: datetime):
+    return f"{date.month:02}-{date.day:02}-{date.year}"
+
+
+
 
 
 if __name__ == '__main__':

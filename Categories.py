@@ -34,12 +34,12 @@ class AddCategoryDialog(QtWidgets.QDialog):
 
 
 class Category:
-    def __init__(self, name, wage, category_number, description, user, table, button, time_label, income_label):
+    def __init__(self, name, wage, category_number, description, user, time_label, income_label):
         self.name = name
         self.wage = wage
         self.category_number = category_number
         self.description = description
-        self.clock = Clock(user, table, button, time_label, income_label, self)
+        self.clock = Clock(user, time_label, income_label, self)
         self.file_path = f"{make_folder_if_it_does_not_exist(user.directory, 'Categories')}/Categories.csv"
         add_file_if_it_does_not_exist(self.file_path)
         self.save()
@@ -50,22 +50,22 @@ class Category:
         add_dict_to_csv_file(self.file_path, info)
 
 
-def add_category(user, table, button, time_label, income_label):
+def add_category(user, time_label, income_label):
     dialog = AddCategoryDialog(user.default_wage)
     if not dialog.result():
         return None
     return Category(dialog.ui.nameLineEdit.text(), dialog.ui.wageLineEdit.text(),
                     dialog.ui.categoryNumberLineEdit.text(), dialog.ui.descriptionTextEdit.toPlainText(),
-                    user, table, button, time_label, income_label)
+                    user, time_label, income_label)
 
 
-def load_categories(user, table, button, time_label, income_label):
+def load_categories(user, time_label, income_label):
     path = f"{make_folder_if_it_does_not_exist(user.directory, 'Categories')}/Categories.csv"
     add_file_if_it_does_not_exist(path)
     raw_categories = get_dicts_from_csv(path)
     categories = []
     for raw_category in raw_categories:
-        category = Category(user=user, table=table, button=button, time_label=time_label, income_label=income_label,
+        category = Category(user=user, time_label=time_label, income_label=income_label,
                             **raw_category)
         categories.append(category)
     return categories
