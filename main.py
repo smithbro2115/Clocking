@@ -1,8 +1,9 @@
 from PyQt5 import QtGui, QtWidgets, QtCore
 from Gui import MainWindow
+from utils import are_you_sure_prompt
 import qdarkstyle
 import Categories
-from Users import add_user, load_users
+from Users import add_user, load_users, delete_user, edit_user
 from datetime import timedelta, datetime
 
 
@@ -25,6 +26,12 @@ class Gui(MainWindow.Ui_MainWindow):
         self.clockTableWidget.setHorizontalHeaderLabels(headers)
         self.clockButton.clicked.connect(self.clock_button_clicked)
         self.addCategoryButton.clicked.connect(self.add_category)
+        self.categoryAddAction.triggered.connect(self.add_category)
+        self.categoryDeleteAction.triggered.connect(self.delete_category_clicked)
+        self.categoryEditAction.triggered.connect(self.edit_category_clicked)
+        self.userAddAction.triggered.connect(self.add_user_button_clicked)
+        self.userDeleteAction.triggered.connect(self.delete_user_clicked)
+        self.userEditAction.triggered.connect(self.edit_user_clicked)
         self.load_users()
         print(self.categories)
         if self.userBox.currentIndex() < 0:
@@ -63,7 +70,8 @@ class Gui(MainWindow.Ui_MainWindow):
     def current_user(self, value):
         self.userLabel.setText(f"User: {self.userBox.currentText()}")
         self._current_user = value
-        self.load_categories()
+        if value:
+            self.load_categories()
 
     @property
     def current_category(self):
@@ -84,6 +92,49 @@ class Gui(MainWindow.Ui_MainWindow):
             self.userBox.addItem(formatted, user)
             self.userBox.setCurrentIndex(self.userBox.findText(formatted))
 
+    def delete_user_clicked(self):
+        if are_you_sure_prompt(f"Are you sure you want to delete the user: {self.current_user.first_name}"):
+            if delete_user(self.current_user):
+                self.reset()
+
+    def edit_user_clicked(self):
+        if self.current_user:
+            user = edit_user(self.current_user)
+            current_cat_index = self.categoryBox.currentIndex()
+            self.reset()
+            self.add_user_to_box(user, switch_focus=True)
+            self.categoryBox.setCurrentIndex(current_cat_index)
+
+    def delete_category_clicked(self):
+        if self.current_category and are_you_sure_prompt(f"Are you sure you w"
+                                                         f"ant to delete the category: {self.current_category.name}"):
+            if Categories.delete_category(self.current_user, self.current_category):
+                self.categories.remove(self.categoryBox.currentData())
+                self.categoryBox.removeItem(self.categoryBox.currentIndex())
+                self.reset_category()
+
+    def edit_category_clicked(self):
+        if self.current_category:
+            category = Categories.edit_category(self.current_user, self.current_category)
+            if category:
+                self.categories.remove(self.categoryBox.currentData())
+                self.categoryBox.removeItem(self.categoryBox.currentIndex())
+                self.categories.append(category)
+                self.categoryBox.addItem(category.name, category)
+                self.categoryBox.setCurrentIndex(self.categoryBox.findText(category.name))
+
+    def reset(self):
+        self.categoryBox.clear()
+        self.userBox.removeItem(self.userBox.currentIndex())
+        self.userBox.setCurrentIndex(-1)
+        self.reset_category()
+
+    def reset_category(self):
+        self.clockTableWidget.setRowCount(0)
+        self.categoryBox.setCurrentIndex(-1)
+        self.clockButton.setText('Clock In')
+        self.current_category = None
+
     def add_user_to_box(self, user, switch_focus=False):
         formatted = f"{user.first_name.capitalize()} {user.last_name.capitalize()}"
         self.userBox.addItem(formatted, user)
@@ -96,7 +147,7 @@ class Gui(MainWindow.Ui_MainWindow):
             self.add_user_to_box(user)
 
     def add_category(self):
-        category = Categories.add_category(self.current_user, self.totalTimeLabel, self.totalIncomeLabel)
+        category = Categories.add_category(self.current_user)
         if category:
             self.categories.append(category)
             self.categoryBox.addItem(category.name, category)
@@ -104,14 +155,19 @@ class Gui(MainWindow.Ui_MainWindow):
 
     def load_categories(self):
         self.categoryBox.clear()
-        self.categories = Categories.load_categories(self.current_user, self.totalTimeLabel, self.totalIncomeLabel)
+        self.categories = Categories.load_categories(self.current_user)
         for category in self.categories:
             self.categoryBox.addItem(category.name, category)
 
     def user_box_changed(self):
-        self.current_user = self.userBox.currentData()
-        self.addCategoryButton.setEnabled(True)
-        self.categoryBox.setEnabled(True)
+        if self.userBox.currentIndex() < 0:
+            enabled = False
+            self.current_user = None
+        else:
+            enabled = True
+            self.current_user = self.userBox.currentData()
+        self.addCategoryButton.setEnabled(enabled)
+        self.categoryBox.setEnabled(enabled)
 
     def category_box_changed(self):
         self.current_category = self.categoryBox.currentData()

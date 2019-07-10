@@ -306,7 +306,31 @@
     </property>
     <addaction name="actionAdd_Button"/>
    </widget>
+   <widget class="QMenu" name="menuCategories">
+    <property name="title">
+     <string>Categories</string>
+    </property>
+    <addaction name="categoryAddAction"/>
+    <addaction name="categoryEditAction"/>
+    <addaction name="categoryDeleteAction"/>
+   </widget>
+   <widget class="QMenu" name="menuUsers">
+    <property name="title">
+     <string>Users</string>
+    </property>
+    <addaction name="userAddAction"/>
+    <addaction name="userEditAction"/>
+    <addaction name="userDeleteAction"/>
+   </widget>
+   <widget class="QMenu" name="menuEdit">
+    <property name="title">
+     <string>Edit</string>
+    </property>
+   </widget>
    <addaction name="menuFile"/>
+   <addaction name="menuEdit"/>
+   <addaction name="menuUsers"/>
+   <addaction name="menuCategories"/>
    <addaction name="menuButtons"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
@@ -328,6 +352,36 @@
   <action name="actionAdd_Category">
    <property name="text">
     <string>Add Category</string>
+   </property>
+  </action>
+  <action name="categoryAddAction">
+   <property name="text">
+    <string>Add</string>
+   </property>
+  </action>
+  <action name="categoryDeleteAction">
+   <property name="text">
+    <string>Delete</string>
+   </property>
+  </action>
+  <action name="categoryEditAction">
+   <property name="text">
+    <string>Edit</string>
+   </property>
+  </action>
+  <action name="userAddAction">
+   <property name="text">
+    <string>Add</string>
+   </property>
+  </action>
+  <action name="userEditAction">
+   <property name="text">
+    <string>Edit</string>
+   </property>
+  </action>
+  <action name="userDeleteAction">
+   <property name="text">
+    <string>Delete</string>
    </property>
   </action>
  </widget>

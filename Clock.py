@@ -4,18 +4,19 @@ from LocalFileHandling import add_to_csv_file, get_list_from_csv, add_file_if_it
 
 
 class Clock:
-    def __init__(self, user, time_label, income_label, category):
+    def __init__(self, user, category):
         self.user = user
         self.state = False
         self.active = False
         self.current_time = None
         self.category = category
-        self.time_label = time_label
-        self.income_label = income_label
-        self.file_path = f"{make_folder_if_it_does_not_exist(user.directory, 'Clocks')}/{self.category.name}.csv"
         add_file_if_it_does_not_exist(self.file_path)
         self._total_monthly_time = timedelta()
         self.load()
+
+    @property
+    def file_path(self):
+        return f"{make_folder_if_it_does_not_exist(self.user.directory, 'Clocks')}/{self.category.name}.csv"
 
     @property
     def total_monthly_time(self):
