@@ -100,10 +100,11 @@ class Gui(MainWindow.Ui_MainWindow):
     def edit_user_clicked(self):
         if self.current_user:
             user = edit_user(self.current_user)
-            current_cat_index = self.categoryBox.currentIndex()
-            self.reset()
-            self.add_user_to_box(user, switch_focus=True)
-            self.categoryBox.setCurrentIndex(current_cat_index)
+            if user:
+                current_cat_index = self.categoryBox.currentIndex()
+                self.reset()
+                self.add_user_to_box(user, switch_focus=True)
+                self.categoryBox.setCurrentIndex(current_cat_index)
 
     def delete_category_clicked(self):
         if self.current_category and are_you_sure_prompt(f"Are you sure you w"
@@ -295,9 +296,6 @@ def format_time(time):
 
 def format_date(date: datetime):
     return f"{date.month:02}-{date.day:02}-{date.year}"
-
-
-
 
 
 if __name__ == '__main__':
