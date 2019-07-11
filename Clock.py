@@ -1,24 +1,22 @@
 from datetime import datetime, timedelta
-from PyQt5.QtWidgets import QTableWidget, QTableWidgetItem, QPushButton
 from LocalFileHandling import add_to_csv_file, get_list_from_csv, add_file_if_it_does_not_exist, \
     make_folder_if_it_does_not_exist
 
 
 class Clock:
-    def __init__(self, user, table: QTableWidget, button: QPushButton, time_label, income_label, category):
+    def __init__(self, user, category):
         self.user = user
-        self._state = False
+        self.state = False
         self.active = False
         self.current_time = None
-        self.table = table
         self.category = category
-        self.time_label = time_label
-        self.income_label = income_label
-        self.file_path = f"{make_folder_if_it_does_not_exist(user.directory, 'Clocks')}/{self.category.name}.csv"
         add_file_if_it_does_not_exist(self.file_path)
-        self.button = button
         self._total_monthly_time = timedelta()
         self.load()
+
+    @property
+    def file_path(self):
+        return f"{make_folder_if_it_does_not_exist(self.user.directory, 'Clocks')}/{self.category.name}.csv"
 
     @property
     def total_monthly_time(self):
@@ -26,54 +24,28 @@ class Clock:
 
     @total_monthly_time.setter
     def total_monthly_time(self, value: timedelta):
-        self.time_label.setText(f"Total Time: {format_time_from_seconds(value.seconds)}")
-        income = value.seconds/3600*float(self.category.wage)
-        if not income:
-            income = 0.00
-        self.income_label.setText("Total Income: " + '${:,.2f}'.format(income))
         self._total_monthly_time = value
-
-    @property
-    def state(self):
-        return self._state
-
-    @state.setter
-    def state(self, value):
-        self._state = value
-        self.set_button_text()
-
-    def set_button_text(self):
-        if self.active:
-            if self.state:
-                self.button.setText("Clock Out")
-            else:
-                self.button.setText("Clock In")
 
     def clock(self):
         if self.state:
-            self.clock_out()
+            return self.clock_out()
         else:
-            self.clock_in()
+            return self.clock_in()
 
     def clock_in(self):
-        self.table.insertRow(self.table.rowCount())
         date_time = datetime.now()
         self.current_time = date_time
-        self.set_next_item(0, date_time)
         self.save(self.current_time, "0:00:00", timedelta())
         self.state = True
+        return date_time
 
     def clock_out(self):
         date_time = datetime.now()
-        self.set_next_item(1, date_time)
         total_time = date_time - self.current_time
-        self.set_next_item(2, total_time)
         self.total_monthly_time += total_time
         self.save(self.current_time, date_time, total_time, replace=True)
         self.state = False
-
-    def set_next_item(self, column, value):
-        self.table.setItem(self.table.rowCount() - 1, column, QTableWidgetItem(str(value)))
+        return date_time, total_time
 
     def convert_to_days(self, time_delta):
         return time_delta/timedelta(days=1)
@@ -89,20 +61,28 @@ class Clock:
         self.reset()
         rows = get_list_from_csv(self.file_path)
         for row in rows:
-            self.table.insertRow(self.table.rowCount())
-            row[2] = timedelta(days=float(row[2]))
-            for index, item in enumerate(row):
-                self.set_next_item(index, item)
+            row = self.parse_row(row)
             self.total_monthly_time += row[2]
-        self.check_if_clocked_in(rows)
+        return rows
+
+    def parse_row(self, row):
+        row[0] = datetime.strptime(row[0], '%Y-%m-%d %H:%M:%S.%f')
+        try:
+            row[1] = datetime.strptime(row[1], '%Y-%m-%d %H:%M:%S.%f')
+        except ValueError:
+            self.state = True
+            self.current_time = row[0]
+        row[2] = timedelta(days=float(row[2]))
+        return row
 
     def check_if_clocked_in(self, rows):
         try:
             if rows[-1][1] == "0:00:00":
                 self.state = True
                 self.current_time = datetime.strptime(rows[-1][0], '%Y-%m-%d %H:%M:%S.%f')
+                return True
         except IndexError:
-            pass
+            return False
 
 
 def format_time_from_seconds(seconds):

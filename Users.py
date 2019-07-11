@@ -1,26 +1,39 @@
 from Gui.AddUserDialog import Ui_AddUserDialog
 from PyQt5 import QtWidgets, QtGui
 import qdarkstyle
+from utils import cannot_except_dialog
 from LocalFileHandling import get_app_data_folder, add_dict_to_csv_file, add_file_if_it_does_not_exist, \
     make_folder_if_it_does_not_exist, get_dicts_from_csv
 import os
 
 
 class AddUserDialog(QtWidgets.QDialog):
-    def __init__(self, parent=None):
+    def __init__(self, first_name='', last_name='', default_wage='',
+                 phone_number='', email='', address='', parent=None):
         super(AddUserDialog, self).__init__(parent=parent)
         self.ui = Ui_AddUserDialog()
         self.ui.setupUi(self)
         self.ui.wageLineEdit.setValidator(QtGui.QDoubleValidator())
         self.ui.firstNameLineEdit.setFocus()
-        self.required_fields = [self.ui.firstNameLineEdit, self.ui.lastNameLineEdit]
+        self.required_fields = [self.ui.firstNameLineEdit, self.ui.lastNameLineEdit, self.ui.addressTextEdit,
+                                self.ui.phoneLineEdit, self.ui.emailLineEdit]
         self.setStyleSheet(qdarkstyle.load_stylesheet_pyqt5())
+        self.ui.firstNameLineEdit.setText(first_name)
+        self.ui.lastNameLineEdit.setText(last_name)
+        self.ui.wageLineEdit.setText(str(default_wage))
+        self.ui.phoneLineEdit.setText(phone_number)
+        self.ui.emailLineEdit.setText(email)
+        self.ui.addressTextEdit.setText(address)
         self.exec_()
 
     def check_if_filled(self, fields):
         try:
             for field in fields:
-                if not field.text():
+                try:
+                    text = field.text()
+                except AttributeError:
+                    text = field.toPlainText()
+                if not text:
                     return False
             return True
         except TypeError:
@@ -28,36 +41,58 @@ class AddUserDialog(QtWidgets.QDialog):
                 return False
             return True
 
+    def check_for_bad_characters(self):
+        bad_letters = ['/', '\\']
+        for bad in bad_letters:
+            if bad in (self.ui.firstNameLineEdit.text()or self.ui.lastNameLineEdit.text()):
+                cannot_except_dialog()
+                return True
+        return False
+
     def accept(self):
-        if self.check_if_filled(self.required_fields):
+        if self.check_if_filled(self.required_fields) and not self.check_for_bad_characters():
             super(AddUserDialog, self).accept()
 
 
 class User:
-    def __init__(self, first_name, last_name, default_wage=0.0):
+    def __init__(self, first_name, last_name, phone_number, email, address, default_wage=0.0):
         self.first_name = first_name
         self.last_name = last_name
         self.default_wage = default_wage
+        self.phone_number = phone_number
+        self.email = email
+        self.address = address
         make_folder_if_it_does_not_exist(get_app_data_folder('Users'), f"{self.first_name}_{self.last_name}")
         self.directory = f"{get_app_data_folder('Users')}/{self.first_name}_{self.last_name}"
         self.file_path = f"{self.directory}/{self.first_name}_{self.last_name}_user.csv"
         add_file_if_it_does_not_exist(self.file_path)
         self.save()
 
+    @property
+    def info(self):
+        return {'first_name': self.first_name, 'last_name': self.last_name, 'default_wage': self.default_wage,
+                'phone_number': self.phone_number, 'email': self.email, 'address': self.address}
+
     def save(self):
-        info = {'first_name': self.first_name, 'last_name': self.last_name, 'default_wage': self.default_wage}
-        add_dict_to_csv_file(self.file_path, info, keyword='last_name')
+        add_dict_to_csv_file(self.file_path, self.info, keyword='last_name')
 
 
 def add_user():
     dialog = AddUserDialog()
+    return make_user(dialog)
+
+
+def make_user(dialog):
     if not dialog.result():
         return None
     try:
         user = User(dialog.ui.firstNameLineEdit.text(), dialog.ui.lastNameLineEdit.text(),
-                    float(dialog.ui.wageLineEdit.text()))
+                    dialog.ui.phoneLineEdit.text(), dialog.ui.emailLineEdit.text(),
+                    dialog.ui.addressTextEdit.toPlainText(), float(dialog.ui.wageLineEdit.text()))
     except ValueError:
-        user = User(dialog.ui.firstNameLineEdit.text(), dialog.ui.lastNameLineEdit.text())
+        user = User(dialog.ui.firstNameLineEdit.text(), dialog.ui.lastNameLineEdit.text(),
+                    dialog.ui.phoneLineEdit.text(), dialog.ui.emailLineEdit.text(),
+                    dialog.ui.addressTextEdit.toPlainText())
     return user
 
 
@@ -87,3 +122,25 @@ def load_users():
     for path in paths:
         users.extend(load_user(path))
     return users
+
+
+def delete_user(user):
+    import shutil
+    try:
+        shutil.rmtree(user.directory)
+        return True
+    except Exception:
+        return False
+
+
+def edit_user(user):
+    import shutil
+    dialog = AddUserDialog(**user.info)
+    print(dialog.result())
+    if not dialog.result():
+        return None
+    os.remove(user.file_path)
+    new_directory = f"{get_app_data_folder('Users')}/{dialog.ui.firstNameLineEdit.text()}_" \
+        f"{dialog.ui.lastNameLineEdit.text()}"
+    shutil.move(user.directory, new_directory)
+    return make_user(dialog)

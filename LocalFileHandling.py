@@ -33,11 +33,33 @@ def add_to_csv_file(path, list_to_write, replace):
 def add_dict_to_csv_file(path, dict_to_write, keyword='name'):
     list_of_dicts = get_dicts_from_csv(path)
     add_to_list_if_name_not_duplicate(list_of_dicts, dict_to_write, keyword)
-    headers = dict_to_write.keys()
+    save_dicts_to_csv_file(path, list_of_dicts)
+
+
+def save_dicts_to_csv_file(path, dicts_to_save):
+    try:
+        headers = dicts_to_save[0].keys()
+    except IndexError:
+        headers = {}
     with open(path, 'w') as csv_file:
         writer = csv.DictWriter(csv_file, fieldnames=headers)
         writer.writeheader()
-        writer.writerows(list_of_dicts)
+        writer.writerows(dicts_to_save)
+
+
+def replace_dicts_from_csv(path, old_dict, new_dict):
+    delete_dict_from_csv(path, old_dict)
+    add_dict_to_csv_file(path, new_dict)
+
+
+def delete_dict_from_csv(path, dict_to_delete):
+    list_of_dicts = get_dicts_from_csv(path)
+    for existing_dict in list_of_dicts:
+        if existing_dict == dict_to_delete:
+            list_of_dicts.remove(existing_dict)
+            save_dicts_to_csv_file(path, list_of_dicts)
+            return True
+    return False
 
 
 def add_to_list_if_name_not_duplicate(dict_list, new_dict, keyword):
