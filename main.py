@@ -35,7 +35,6 @@ class Gui(MainWindow.Ui_MainWindow):
         self.userEditAction.triggered.connect(self.edit_user_clicked)
         self.actionExport_Invoice.triggered.connect(self.export_invoice)
         self.load_users()
-        print(self.categories)
         if self.userBox.currentIndex() < 0:
             self.categoryBox.setEnabled(False)
             self.addCategoryButton.setEnabled(False)
