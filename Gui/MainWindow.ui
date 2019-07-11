@@ -299,6 +299,8 @@
     <addaction name="actionAdd_Category"/>
     <addaction name="separator"/>
     <addaction name="actionExport_Invoice"/>
+    <addaction name="separator"/>
+    <addaction name="actionPreferences"/>
    </widget>
    <widget class="QMenu" name="menuButtons">
     <property name="title">
@@ -382,6 +384,11 @@
   <action name="userDeleteAction">
    <property name="text">
     <string>Delete</string>
+   </property>
+  </action>
+  <action name="actionPreferences">
+   <property name="text">
+    <string>Preferences</string>
    </property>
   </action>
  </widget>

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'Z:\Employee Folders\Josh\Programs\Clocking\Gui\MainWindow.ui'
+# Form implementation generated from reading ui file 'D:\Programming\Clocking\Gui\MainWindow.ui'
 #
 # Created by: PyQt5 UI code generator 5.11.3
 #
@@ -204,10 +204,14 @@ class Ui_MainWindow(object):
         self.userEditAction.setObjectName("userEditAction")
         self.userDeleteAction = QtWidgets.QAction(MainWindow)
         self.userDeleteAction.setObjectName("userDeleteAction")
+        self.actionPreferences = QtWidgets.QAction(MainWindow)
+        self.actionPreferences.setObjectName("actionPreferences")
         self.menuFile.addAction(self.actionAdd_User)
         self.menuFile.addAction(self.actionAdd_Category)
         self.menuFile.addSeparator()
         self.menuFile.addAction(self.actionExport_Invoice)
+        self.menuFile.addSeparator()
+        self.menuFile.addAction(self.actionPreferences)
         self.menuButtons.addAction(self.actionAdd_Button)
         self.menuCategories.addAction(self.categoryAddAction)
         self.menuCategories.addAction(self.categoryEditAction)
@@ -252,4 +256,5 @@ class Ui_MainWindow(object):
         self.userAddAction.setText(_translate("MainWindow", "Add"))
         self.userEditAction.setText(_translate("MainWindow", "Edit"))
         self.userDeleteAction.setText(_translate("MainWindow", "Delete"))
+        self.actionPreferences.setText(_translate("MainWindow", "Preferences"))
 

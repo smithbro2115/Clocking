@@ -4,19 +4,20 @@ from LocalFileHandling import get_app_data_folder, make_folder_if_it_does_not_ex
 import shutil
 from datetime import datetime
 from Company import Company
+from PyQt5 import QtWidgets
+import os
 
 
 invoice_template_path = f"{get_app_data_folder('')}/Invoice.xlsx"
 align = styles.Alignment(horizontal='left')
 font = styles.Font(size=12)
-fill = styles.PatternFill(bgColor='ffff99', fill_type='solid')
 default_company = Company(name='Brinkman Adventures', address='13939 N. Cedarburg Rd. Mequon, WI 53097',
                           phone_number='262-227-8621', email='ian@brinkmanadventures.com',
                           motto='“Inspiring the next generation of missionaries”')
 
 
-def make_invoice_excel(user, categories):
-    excel_path = make_new_excel_from_template(user)
+def make_invoice_excel(user, categories, path=None):
+    excel_path = make_new_excel_from_template(user, path)
     wb = openpyxl.load_workbook(excel_path)
     sheet = wb.active
     add_user_info_to_invoice(sheet, user)
@@ -24,6 +25,13 @@ def make_invoice_excel(user, categories):
     for category in categories:
         add_category_to_invoice(category, sheet)
     wb.save(excel_path)
+
+
+def verify_path(path):
+    file_path, file_extension = os.path.splitext(path)
+    if file_extension is not '.xlsx':
+        path = file_path + ".xlsx"
+    return path
 
 
 def add_user_info_to_invoice(df, user):
@@ -38,11 +46,9 @@ def add_user_info_to_invoice(df, user):
             cell = df.cell(row=row, column=column)
             cell.alignment = align
             cell.font = font
-            cell.fill = fill
 
 
 def add_company_info_to_invoice(df, company):
-    new_fill = styles.PatternFill(bgColor='cfe7f5', fill_type='solid')
     df.cell(row=1, column=7).value = company.name
     df.cell(row=2, column=7).value = company.motto
     df.cell(row=7, column=7).value = company.name
@@ -54,7 +60,6 @@ def add_company_info_to_invoice(df, company):
             cell = df.cell(row=row, column=column)
             cell.alignment = align
             cell.font = font
-            cell.fill = new_fill
 
 
 def add_category_to_invoice(category, df):
@@ -62,7 +67,7 @@ def add_category_to_invoice(category, df):
         if not df.cell(row=i, column=1).value:
             date = datetime.now()
             df.cell(row=i, column=1).value = date.date()
-            df.cell(row=i, column=2).value = float(category.clock.total_monthly_time.seconds)/3600
+            df.cell(row=i, column=2).value = round(float(category.clock.total_monthly_time.seconds)/3600, 4)
             df.cell(row=i, column=3).value = category.category_number
             df.cell(row=i, column=4).value = category.description
             df.cell(row=i, column=8).value = category.wage
@@ -70,11 +75,29 @@ def add_category_to_invoice(category, df):
     return False
 
 
-def make_new_excel_from_template(user):
-    date = datetime.now()
-    new_dir = f"{user.directory}/Invoices"
-    make_folder_if_it_does_not_exist(user.directory, 'Invoices')
-    new_path = f"{new_dir}/{user.first_name}_{user.last_name}_Invoice" \
-        f"_{date.strftime('%B')}_{date.year}.xlsx"
+def make_new_excel_from_template(user, path=None):
+    if path:
+        new_path = path
+    else:
+        new_dir = f"{user.directory}/Invoices"
+        make_folder_if_it_does_not_exist(user.directory, 'Invoices')
+        new_path = f"{new_dir}/{get_file_invoice_name(user)}"
+    new_path = verify_path(new_path)
     shutil.copy(invoice_template_path, new_path)
     return new_path
+
+
+def get_file_invoice_name(user):
+    date = datetime.now()
+    return f"{user.first_name}_{user.last_name}_Invoice" \
+        f"_{date.strftime('%B')}_{date.year}.xlsx"
+
+
+class GetFileLocationDialog(QtWidgets.QFileDialog):
+    def __init__(self, default_name):
+        super(GetFileLocationDialog, self).__init__()
+        self.default_name = default_name
+
+    def get_save_path(self):
+        result = self.getSaveFileName(directory=f'/{self.default_name}', caption='Export Invoice')[0]
+        return result

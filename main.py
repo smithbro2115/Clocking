@@ -5,7 +5,8 @@ import qdarkstyle
 import Categories
 from Users import add_user, load_users, delete_user, edit_user
 from datetime import timedelta, datetime
-from Exporting import make_invoice_excel
+from Exporting import make_invoice_excel, GetFileLocationDialog, get_file_invoice_name
+from Preferences import PreferenceDialog
 
 
 class Gui(MainWindow.Ui_MainWindow):
@@ -50,7 +51,10 @@ class Gui(MainWindow.Ui_MainWindow):
 
     def export_invoice(self):
         if self.current_category:
-            make_invoice_excel(self.current_user, self.categories)
+            dialog = GetFileLocationDialog(get_file_invoice_name(self.current_user))
+            result = dialog.get_save_path()
+            if result:
+                make_invoice_excel(self.current_user, self.categories, path=result)
 
     @property
     def global_monthly_time(self):
@@ -89,6 +93,17 @@ class Gui(MainWindow.Ui_MainWindow):
         self.clockTableWidget.setRowCount(0)
         if value:
             self.load_clock()
+
+    def preferences_clicked(self):
+        dialog = PreferenceDialog()
+        dialog.exec()
+        if dialog.result():
+            if dialog.user_location_changed:
+                pass
+
+    def move_users(self):
+        for user in self.users:
+            edit_user(user)
 
     def add_user_button_clicked(self):
         user = add_user()

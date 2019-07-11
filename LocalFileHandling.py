@@ -1,6 +1,7 @@
 import pickle
 import os
 import csv
+import configparser
 
 
 def pickle_obj(path, obj):
@@ -93,6 +94,26 @@ def make_folder_if_it_does_not_exist(src, folder):
     except FileExistsError:
         pass
     return directory
+
+
+def add_to_config(category, value):
+    config_path = f"{get_app_data_folder('')}/config.ini"
+    config = configparser.ConfigParser()
+    config.read(config_path)
+    config[category] = value
+    with open(config_path, 'w') as config_file:
+        config.write(config_file)
+
+
+def read_from_config(category):
+    config_path = f"{get_app_data_folder('')}/config.ini"
+    config = configparser.ConfigParser()
+    config.read(config_path)
+    return config[category]
+
+
+def does_folder_exist(path):
+    return os.path.exists(path)
 
 
 def get_app_data_folder(folder):
