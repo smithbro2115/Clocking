@@ -1,10 +1,12 @@
 from Gui.AddUserDialog import Ui_AddUserDialog
 from PyQt5 import QtWidgets, QtGui
 import qdarkstyle
-from utils import cannot_except_dialog
+from utils import cannot_except_dialog, make_dir
 from LocalFileHandling import get_app_data_folder, add_dict_to_csv_file, add_file_if_it_does_not_exist, \
-    make_folder_if_it_does_not_exist, get_dicts_from_csv, read_from_config, add_to_config
+    make_folder_if_it_does_not_exist, get_dicts_from_csv, read_from_config, add_to_config, does_folder_exist, \
+    delete_directory
 import os
+from configparser import NoSectionError
 
 
 class AddUserDialog(QtWidgets.QDialog):
@@ -54,17 +56,6 @@ class AddUserDialog(QtWidgets.QDialog):
             super(AddUserDialog, self).accept()
 
 
-class GetFolderLocationDialog(QtWidgets.QFileDialog):
-    def __init__(self, default_name):
-        super(GetFolderLocationDialog, self).__init__()
-        self.default_name = default_name
-
-    def get_folder_path(self):
-        result = self.getExistingDirectory(caption='Select Users Save Location')
-        print(result)
-        return result
-
-
 class User:
     def __init__(self, first_name, last_name, phone_number, email, address, default_wage=0.0):
         self.first_name = first_name
@@ -73,24 +64,24 @@ class User:
         self.phone_number = phone_number
         self.email = email
         self.address = address
-        self.directory = self._get_dir()
+        make_dir(self.directory)
         self.file_path = f"{self.directory}/{self.first_name}_{self.last_name}_user.csv"
         add_file_if_it_does_not_exist(self.file_path)
         self.save()
 
     @property
+    def directory(self):
+        try:
+            return f"{read_from_config('USERS', 'USER_SAVE_LOCATION')}/Users/{self.first_name}_{self.last_name}"
+        except NoSectionError:
+            make_folder_if_it_does_not_exist(get_app_data_folder('Users'), f"{self.first_name}_{self.last_name}")
+            add_to_config('USERS', 'USER_SAVE_LOCATION', get_app_data_folder('Users'))
+            return f"{get_app_data_folder('Users')}/{self.first_name}_{self.last_name}"
+
+    @property
     def info(self):
         return {'first_name': self.first_name, 'last_name': self.last_name, 'default_wage': self.default_wage,
                 'phone_number': self.phone_number, 'email': self.email, 'address': self.address}
-
-    def _get_dir(self):
-        try:
-            path = read_from_config('USER_SAVE_LOCATION')
-        except KeyError:
-            make_folder_if_it_does_not_exist(get_app_data_folder('Users'), f"{self.first_name}_{self.last_name}")
-            path = f"{get_app_data_folder('Users')}/{self.first_name}_{self.last_name}"
-            add_to_config('USER_SAVE_LOCATION', path)
-        return path
 
     def save(self):
         add_dict_to_csv_file(self.file_path, self.info, keyword='last_name')
@@ -116,13 +107,17 @@ def make_user(dialog):
 
 
 def get_user_file_paths():
-    path = f"{get_app_data_folder('Users')}"
-    paths = []
-    for root, dirs, files in os.walk(path):
-        for file in files:
-            if file.endswith('user.csv'):
-                paths.append(os.path.join(root, file))
-    return paths
+    try:
+        path = f"{read_from_config('USERS', 'USER_SAVE_LOCATION')}"
+    except NoSectionError:
+        return []
+    else:
+        paths = []
+        for root, dirs, files in os.walk(path):
+            for file in files:
+                if file.endswith('user.csv'):
+                    paths.append(os.path.join(root, file))
+        return paths
 
 
 def load_user(path):
@@ -144,21 +139,16 @@ def load_users():
 
 
 def delete_user(user):
-    import shutil
-    try:
-        shutil.rmtree(user.directory)
-        return True
-    except Exception:
-        return False
+    return delete_directory(user.directory)
 
 
-def move_user(user):
+def move_user(user, location, old_location):
     import shutil
     old_info = user.info
     os.remove(user.file_path)
-    new_directory = f"{make_folder_if_it_does_not_exist(read_from_config('USER_SAVE_LOCATION'))}/{user.ui.firstNameLineEdit.text()}_" \
-        f"{user.ui.lastNameLineEdit.text()}"
-    shutil.move(user.directory, new_directory)
+    new_directory = f"{location}/Users"
+    old_location = f"{old_location}/Users"
+    shutil.move(old_location, new_directory)
     return User(**old_info)
 
 
@@ -168,7 +158,7 @@ def edit_user(user):
     if not dialog.result():
         return None
     os.remove(user.file_path)
-    new_directory = f"{read_from_config('USER_SAVE_LOCATION')}/{dialog.ui.firstNameLineEdit.text()}_" \
+    new_directory = f"{read_from_config('USERS', 'USER_SAVE_LOCATION')}/{dialog.ui.firstNameLineEdit.text()}_" \
         f"{dialog.ui.lastNameLineEdit.text()}"
     shutil.move(user.directory, new_directory)
     return make_user(dialog)

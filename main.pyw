@@ -3,10 +3,11 @@ from Gui import MainWindow
 from utils import are_you_sure_prompt
 import qdarkstyle
 import Categories
-from Users import add_user, load_users, delete_user, edit_user
+from Users import add_user, load_users, delete_user, edit_user, move_user
 from datetime import timedelta, datetime
 from Exporting import make_invoice_excel, GetFileLocationDialog, get_file_invoice_name
 from Preferences import PreferenceDialog
+from LocalFileHandling import delete_directory, read_from_config
 
 
 class Gui(MainWindow.Ui_MainWindow):
@@ -35,6 +36,7 @@ class Gui(MainWindow.Ui_MainWindow):
         self.userDeleteAction.triggered.connect(self.delete_user_clicked)
         self.userEditAction.triggered.connect(self.edit_user_clicked)
         self.actionExport_Invoice.triggered.connect(self.export_invoice)
+        self.actionPreferences.triggered.connect(self.preferences_clicked)
         self.load_users()
         if self.userBox.currentIndex() < 0:
             self.categoryBox.setEnabled(False)
@@ -99,15 +101,25 @@ class Gui(MainWindow.Ui_MainWindow):
         dialog.exec()
         if dialog.result():
             if dialog.user_location_changed:
-                pass
+                self.move_users(dialog.previous_user_save_location)
 
-    def move_users(self):
+    def move_users(self, old_directory):
+        current_user = self.userBox.currentIndex()
+        current_category = self.categoryBox.currentIndex()
+        self.reset()
+        self.userBox.clear()
+        path = read_from_config('USERS', 'USER_SAVE_LOCATION')
         for user in self.users:
-            edit_user(user)
+            move_user(user, path, old_directory)
+        delete_directory(f"{old_directory}/Users")
+        self.load_users()
+        self.userBox.setCurrentIndex(current_user)
+        self.categoryBox.setCurrentIndex(current_category)
 
     def add_user_button_clicked(self):
         user = add_user()
         if user:
+            self.users.append(user)
             formatted = f"{user.first_name.capitalize()} {user.last_name.capitalize()}"
             self.userBox.addItem(formatted, user)
             self.userBox.setCurrentIndex(self.userBox.findText(formatted))

@@ -1,7 +1,6 @@
 import openpyxl
 from openpyxl import styles
 from LocalFileHandling import get_app_data_folder, make_folder_if_it_does_not_exist
-import shutil
 from datetime import datetime
 from Company import Company
 from PyQt5 import QtWidgets
@@ -76,6 +75,7 @@ def add_category_to_invoice(category, df):
 
 
 def make_new_excel_from_template(user, path=None):
+    import shutil
     if path:
         new_path = path
     else:

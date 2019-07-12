@@ -96,20 +96,28 @@ def make_folder_if_it_does_not_exist(src, folder):
     return directory
 
 
-def add_to_config(category, value):
+def add_to_config(category, option, value):
     config_path = f"{get_app_data_folder('')}/config.ini"
     config = configparser.ConfigParser()
+    try_to_add_section_to_config(config, category)
     config.read(config_path)
-    config[category] = value
+    config.set(category, str(option), str(value))
     with open(config_path, 'w') as config_file:
         config.write(config_file)
 
 
-def read_from_config(category):
+def try_to_add_section_to_config(config, section):
+    try:
+        config.add_section(section)
+    except configparser.DuplicateSectionError:
+        pass
+
+
+def read_from_config(category, option):
     config_path = f"{get_app_data_folder('')}/config.ini"
     config = configparser.ConfigParser()
     config.read(config_path)
-    return config[category]
+    return config.get(category, option)
 
 
 def does_folder_exist(path):
@@ -131,4 +139,13 @@ def check_if_file_exists(path):
         open(path, 'r')
         return True
     except FileNotFoundError:
+        return False
+
+
+def delete_directory(directory):
+    import shutil
+    try:
+        shutil.rmtree(directory)
+        return True
+    except Exception:
         return False

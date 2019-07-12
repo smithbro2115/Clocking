@@ -2,6 +2,7 @@ from Gui.AreYouSureDialog import Ui_Dialog
 from Gui.CannotExcept import Ui_Dialog as CannotUi
 from PyQt5 import QtWidgets
 import qdarkstyle
+import os
 
 
 def disconnect_all_signals(*args):
@@ -41,3 +42,13 @@ def are_you_sure_prompt(msg):
 
 def cannot_except_dialog():
     CannotExceptDialog()
+
+
+def does_folder_exist(path):
+    return os.path.exists(path)
+
+
+def make_dir(directory):
+    if not does_folder_exist(directory):
+        os.makedirs(directory)
+    return directory
