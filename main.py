@@ -1,13 +1,14 @@
 from PyQt5 import QtGui, QtWidgets, QtCore
 from Gui import MainWindow
-from utils import are_you_sure_prompt
+from utils import are_you_sure_prompt, make_dir
 import qdarkstyle
 import Categories
 from Users import add_user, load_users, delete_user, edit_user, move_user
 from datetime import timedelta, datetime
 from Exporting import make_invoice_excel, GetFileLocationDialog, get_file_invoice_name
 from Preferences import PreferenceDialog
-from LocalFileHandling import delete_directory, read_from_config
+from configparser import NoSectionError
+from LocalFileHandling import delete_directory, read_from_config, get_app_data_folder, add_to_config
 
 
 class Gui(MainWindow.Ui_MainWindow):
@@ -38,6 +39,7 @@ class Gui(MainWindow.Ui_MainWindow):
         self.actionExport_Invoice.triggered.connect(self.export_invoice)
         self.actionPreferences.triggered.connect(self.preferences_clicked)
         self.load_users()
+        self.load_config()
         if self.userBox.currentIndex() < 0:
             self.categoryBox.setEnabled(False)
             self.addCategoryButton.setEnabled(False)
@@ -57,6 +59,14 @@ class Gui(MainWindow.Ui_MainWindow):
             result = dialog.get_save_path()
             if result:
                 make_invoice_excel(self.current_user, self.categories, path=result)
+
+    def load_config(self):
+        try:
+            return f"{read_from_config('USERS', 'USER_SAVE_LOCATION')}"
+        except NoSectionError:
+            app_data_folder = get_app_data_folder('Users')
+            add_to_config('USERS', 'USER_SAVE_LOCATION', app_data_folder)
+            return app_data_folder
 
     @property
     def global_monthly_time(self):
