@@ -11,12 +11,12 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>Clocking</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout" rowstretch="0,5">
     <item row="1" column="0">
-     <layout class="QGridLayout" name="gridLayout_2" rowstretch="0,0,0,0,0" columnstretch="0,0,1,0">
+     <layout class="QGridLayout" name="gridLayout_2" rowstretch="0,0,0,0,0" columnstretch="0,0,1,0" rowminimumheight="0,0,0,0,50">
       <property name="leftMargin">
        <number>0</number>
       </property>
@@ -175,14 +175,14 @@
       <item row="4" column="1" colspan="3">
        <widget class="QPushButton" name="clockButton">
         <property name="sizePolicy">
-         <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+         <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
         </property>
         <property name="font">
          <font>
-          <pointsize>12</pointsize>
+          <pointsize>15</pointsize>
           <weight>75</weight>
           <bold>true</bold>
          </font>
@@ -282,6 +282,7 @@
     </item>
    </layout>
   </widget>
+  <widget class="QStatusBar" name="statusbar"/>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
     <rect>
@@ -295,10 +296,8 @@
     <property name="title">
      <string>File</string>
     </property>
-    <addaction name="actionAdd_User"/>
-    <addaction name="actionAdd_Category"/>
-    <addaction name="separator"/>
     <addaction name="actionExport_Invoice"/>
+    <addaction name="actionExport_All_Invoices"/>
     <addaction name="separator"/>
     <addaction name="actionPreferences"/>
    </widget>
@@ -308,34 +307,24 @@
     </property>
     <addaction name="actionAdd_Button"/>
    </widget>
-   <widget class="QMenu" name="menuCategories">
-    <property name="title">
-     <string>Categories</string>
-    </property>
-    <addaction name="categoryAddAction"/>
-    <addaction name="categoryEditAction"/>
-    <addaction name="categoryDeleteAction"/>
-   </widget>
-   <widget class="QMenu" name="menuUsers">
-    <property name="title">
-     <string>Users</string>
-    </property>
-    <addaction name="userAddAction"/>
-    <addaction name="userEditAction"/>
-    <addaction name="userDeleteAction"/>
-   </widget>
    <widget class="QMenu" name="menuEdit">
     <property name="title">
      <string>Edit</string>
     </property>
+    <addaction name="userAddAction_2"/>
+    <addaction name="actionEdit_User"/>
+    <addaction name="actionDelete_User"/>
+    <addaction name="separator"/>
+    <addaction name="actionAdd_Category_2"/>
+    <addaction name="actionEdit_Category"/>
+    <addaction name="actionDelete_Category"/>
+    <addaction name="separator"/>
+    <addaction name="actionClock"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
-   <addaction name="menuUsers"/>
-   <addaction name="menuCategories"/>
    <addaction name="menuButtons"/>
   </widget>
-  <widget class="QStatusBar" name="statusbar"/>
   <action name="actionAdd_Button">
    <property name="text">
     <string>Add Button</string>
@@ -344,6 +333,12 @@
   <action name="actionExport_Invoice">
    <property name="text">
     <string>Export Invoice</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+I</string>
+   </property>
+   <property name="shortcutVisibleInContextMenu">
+    <bool>true</bool>
    </property>
   </action>
   <action name="actionAdd_User">
@@ -389,6 +384,100 @@
   <action name="actionPreferences">
    <property name="text">
     <string>Preferences</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+P</string>
+   </property>
+   <property name="shortcutVisibleInContextMenu">
+    <bool>true</bool>
+   </property>
+  </action>
+  <action name="userAddAction_2">
+   <property name="text">
+    <string>Add User</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+A</string>
+   </property>
+   <property name="shortcutVisibleInContextMenu">
+    <bool>true</bool>
+   </property>
+  </action>
+  <action name="actionEdit_User">
+   <property name="text">
+    <string>Edit User</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+E</string>
+   </property>
+   <property name="shortcutVisibleInContextMenu">
+    <bool>true</bool>
+   </property>
+  </action>
+  <action name="actionDelete_User">
+   <property name="text">
+    <string>Delete User</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+D</string>
+   </property>
+   <property name="shortcutVisibleInContextMenu">
+    <bool>true</bool>
+   </property>
+  </action>
+  <action name="actionAdd_Category_2">
+   <property name="text">
+    <string>Add Category</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Alt+A</string>
+   </property>
+   <property name="shortcutVisibleInContextMenu">
+    <bool>true</bool>
+   </property>
+  </action>
+  <action name="actionEdit_Category">
+   <property name="text">
+    <string>Edit Category</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Alt+E</string>
+   </property>
+   <property name="shortcutVisibleInContextMenu">
+    <bool>true</bool>
+   </property>
+  </action>
+  <action name="actionDelete_Category">
+   <property name="text">
+    <string>Delete Category</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Alt+D</string>
+   </property>
+   <property name="shortcutVisibleInContextMenu">
+    <bool>true</bool>
+   </property>
+  </action>
+  <action name="actionExport_All_Invoices">
+   <property name="text">
+    <string>Export All Invoices</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+I</string>
+   </property>
+   <property name="shortcutVisibleInContextMenu">
+    <bool>true</bool>
+   </property>
+  </action>
+  <action name="actionClock">
+   <property name="text">
+    <string>Clock</string>
+   </property>
+   <property name="shortcut">
+    <string>Space</string>
+   </property>
+   <property name="shortcutVisibleInContextMenu">
+    <bool>true</bool>
    </property>
   </action>
  </widget>

@@ -69,6 +69,12 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>nameLineEdit</tabstop>
+  <tabstop>wageLineEdit</tabstop>
+  <tabstop>categoryNumberLineEdit</tabstop>
+  <tabstop>descriptionTextEdit</tabstop>
+ </tabstops>
  <resources/>
  <connections>
   <connection>

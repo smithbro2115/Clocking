@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'Z:\Employee Folders\Josh\Programs\Clocking\Gui\AddCategoryDialog.ui'
+# Form implementation generated from reading ui file 'C:\Users\Josh\PycharmProjects\Clocking\Gui\AddCategoryDialog.ui'
 #
 # Created by: PyQt5 UI code generator 5.11.3
 #
@@ -49,6 +49,9 @@ class Ui_addCategoryDialog(object):
         self.buttonBox.accepted.connect(addCategoryDialog.accept)
         self.buttonBox.rejected.connect(addCategoryDialog.reject)
         QtCore.QMetaObject.connectSlotsByName(addCategoryDialog)
+        addCategoryDialog.setTabOrder(self.nameLineEdit, self.wageLineEdit)
+        addCategoryDialog.setTabOrder(self.wageLineEdit, self.categoryNumberLineEdit)
+        addCategoryDialog.setTabOrder(self.categoryNumberLineEdit, self.descriptionTextEdit)
 
     def retranslateUi(self, addCategoryDialog):
         _translate = QtCore.QCoreApplication.translate

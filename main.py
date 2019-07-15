@@ -3,9 +3,10 @@ from Gui import MainWindow
 from utils import are_you_sure_prompt, make_dir
 import qdarkstyle
 import Categories
+from Clock import get_new_date_time
 from Users import add_user, load_users, delete_user, edit_user, move_user
 from datetime import timedelta, datetime
-from Exporting import make_invoice_excel, GetFileLocationDialog, get_file_invoice_name
+from Exporting import make_invoice_excel, GetFileLocationDialog, get_file_invoice_name, get_invoice_folder_name
 from Preferences import PreferenceDialog
 from configparser import NoSectionError
 from LocalFileHandling import delete_directory, read_from_config, get_app_data_folder, add_to_config
@@ -30,13 +31,16 @@ class Gui(MainWindow.Ui_MainWindow):
         self.clockTableWidget.setHorizontalHeaderLabels(headers)
         self.clockButton.clicked.connect(self.clock_button_clicked)
         self.addCategoryButton.clicked.connect(self.add_category)
-        self.categoryAddAction.triggered.connect(self.add_category)
-        self.categoryDeleteAction.triggered.connect(self.delete_category_clicked)
-        self.categoryEditAction.triggered.connect(self.edit_category_clicked)
-        self.userAddAction.triggered.connect(self.add_user_button_clicked)
-        self.userDeleteAction.triggered.connect(self.delete_user_clicked)
-        self.userEditAction.triggered.connect(self.edit_user_clicked)
-        self.actionExport_Invoice.triggered.connect(self.export_invoice)
+        self.actionAdd_Category_2.triggered.connect(self.add_category)
+        self.actionDelete_Category.triggered.connect(self.delete_category_clicked)
+        self.actionEdit_Category.triggered.connect(self.edit_category_clicked)
+        self.userAddAction_2.triggered.connect(self.add_user_button_clicked)
+        self.actionDelete_User.triggered.connect(self.delete_user_clicked)
+        self.actionEdit_User.triggered.connect(self.edit_user_clicked)
+        self.clockTableWidget.itemDoubleClicked.connect(self.clock_table_edit_triggered)
+        self.actionClock.triggered.connect(self.clock_button_clicked)
+        self.actionExport_Invoice.triggered.connect(lambda: self.export_invoice(self.current_user, self.categories))
+        self.actionExport_All_Invoices.triggered.connect(self.export_all_invoices)
         self.actionPreferences.triggered.connect(self.preferences_clicked)
         self.load_users()
         self.load_config()
@@ -53,18 +57,30 @@ class Gui(MainWindow.Ui_MainWindow):
         self.globalRadioButton.clicked.connect(lambda:
                                                self.set_monthly_time_and_income(self.current_clock.total_monthly_time))
 
-    def export_invoice(self):
+    def export_invoice(self, user, categories):
         if self.current_category:
-            dialog = GetFileLocationDialog(get_file_invoice_name(self.current_user))
+            dialog = GetFileLocationDialog(get_file_invoice_name(user))
             result = dialog.get_save_path()
             if result:
-                make_invoice_excel(self.current_user, self.categories, path=result)
+                make_invoice_excel(user, categories, path=result)
+
+    def export_all_invoices(self):
+        self.export_invoices(self.users)
+
+    def export_invoices(self, users):
+        folder_name = get_invoice_folder_name()
+        dialog = GetFileLocationDialog(folder_name)
+        path = dialog.get_save_path()
+        make_dir(path)
+        if path:
+            for user in users:
+                make_invoice_excel(user, Categories.load_categories(user), path=f"{path}/{get_file_invoice_name(user)}")
 
     def load_config(self):
         try:
             return f"{read_from_config('USERS', 'USER_SAVE_LOCATION')}"
         except NoSectionError:
-            app_data_folder = get_app_data_folder('Users')
+            app_data_folder = get_app_data_folder('')
             add_to_config('USERS', 'USER_SAVE_LOCATION', app_data_folder)
             return app_data_folder
 
@@ -105,6 +121,14 @@ class Gui(MainWindow.Ui_MainWindow):
         self.clockTableWidget.setRowCount(0)
         if value:
             self.load_clock()
+
+    def clock_table_edit_triggered(self, item):
+        row_number = item.row()
+        new_date_time = get_new_date_time(item)
+        if isinstance(new_date_time, datetime):
+            row = self.current_clock.edit_clock_time(row_number, item.column(), new_date_time)
+            for index, item in enumerate(row):
+                self.set_next_item(row_number, index, item)
 
     def preferences_clicked(self):
         dialog = PreferenceDialog()
@@ -229,7 +253,7 @@ class Gui(MainWindow.Ui_MainWindow):
         for row in rows:
             self.clockTableWidget.insertRow(self.clockTableWidget.rowCount())
             for index, item in enumerate(row):
-                self.set_next_item(index, item)
+                self.set_next_item(self.clockTableWidget.rowCount() - 1, index, item)
 
     def clock_button_clicked(self):
         if self.current_category:
@@ -292,11 +316,12 @@ class Gui(MainWindow.Ui_MainWindow):
     def set_monthly_total_income(self, income):
         self.totalIncomeLabel.setText("Total Income: " + '${:,.2f}'.format(income))
 
-    def set_next_item(self, column, value):
-        value = self.format_value(value)
-        widget_item = QtWidgets.QTableWidgetItem(str(value))
+    def set_next_item(self, row, column, value):
+        formatted_value = self.format_value(value)
+        widget_item = QtWidgets.QTableWidgetItem(str(formatted_value))
+        widget_item.setData(QtCore.Qt.UserRole, value)
         widget_item.setTextAlignment(QtCore.Qt.AlignCenter)
-        self.clockTableWidget.setItem(self.clockTableWidget.rowCount() - 1, column, widget_item)
+        self.clockTableWidget.setItem(row, column, widget_item)
 
     def format_value(self, value):
         try:
@@ -310,11 +335,11 @@ class Gui(MainWindow.Ui_MainWindow):
 
     def clock_in_table(self, time):
         self.clockTableWidget.insertRow(self.clockTableWidget.rowCount())
-        self.set_next_item(0, time)
+        self.set_next_item(self.clockTableWidget.rowCount() - 1, 0, time)
 
     def clock_out_table(self, time, total_time):
-        self.set_next_item(1, time)
-        self.set_next_item(2, total_time)
+        self.set_next_item(self.clockTableWidget.rowCount() - 1, 1, time)
+        self.set_next_item(self.clockTableWidget.rowCount() - 1, 2, total_time)
 
 
 def format_duration_from_seconds(seconds):

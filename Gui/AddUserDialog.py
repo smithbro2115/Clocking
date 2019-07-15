@@ -63,7 +63,10 @@ class Ui_AddUserDialog(object):
         self.buttonBox.rejected.connect(AddUserDialog.reject)
         QtCore.QMetaObject.connectSlotsByName(AddUserDialog)
         AddUserDialog.setTabOrder(self.firstNameLineEdit, self.lastNameLineEdit)
-        AddUserDialog.setTabOrder(self.lastNameLineEdit, self.wageLineEdit)
+        AddUserDialog.setTabOrder(self.lastNameLineEdit, self.phoneLineEdit)
+        AddUserDialog.setTabOrder(self.phoneLineEdit, self.emailLineEdit)
+        AddUserDialog.setTabOrder(self.emailLineEdit, self.addressTextEdit)
+        AddUserDialog.setTabOrder(self.addressTextEdit, self.wageLineEdit)
 
     def retranslateUi(self, AddUserDialog):
         _translate = QtCore.QCoreApplication.translate

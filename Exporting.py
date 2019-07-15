@@ -93,6 +93,11 @@ def get_file_invoice_name(user):
         f"_{date.strftime('%B')}_{date.year}.xlsx"
 
 
+def get_invoice_folder_name():
+    date = datetime.now()
+    return f"Invoices_{date.strftime('%B')}_{date.year}"
+
+
 class GetFileLocationDialog(QtWidgets.QFileDialog):
     def __init__(self, default_name):
         super(GetFileLocationDialog, self).__init__()

@@ -31,6 +31,13 @@ def add_to_csv_file(path, list_to_write, replace):
             writer.writerow(row)
 
 
+def save_list_to_csv(path, list_to_write):
+    with open(path, mode='w', newline='') as file:
+        writer = csv.writer(file)
+        for row in list_to_write:
+            writer.writerow(row)
+
+
 def add_dict_to_csv_file(path, dict_to_write, keyword='name'):
     list_of_dicts = get_dicts_from_csv(path)
     add_to_list_if_name_not_duplicate(list_of_dicts, dict_to_write, keyword)

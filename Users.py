@@ -74,9 +74,9 @@ class User:
         try:
             return f"{read_from_config('USERS', 'USER_SAVE_LOCATION')}/Users/{self.first_name}_{self.last_name}"
         except NoSectionError:
-            make_folder_if_it_does_not_exist(get_app_data_folder('Users'), f"{self.first_name}_{self.last_name}")
-            add_to_config('USERS', 'USER_SAVE_LOCATION', get_app_data_folder('Users'))
-            return f"{get_app_data_folder('Users')}/{self.first_name}_{self.last_name}"
+            make_folder_if_it_does_not_exist(get_app_data_folder(''), f"{self.first_name}_{self.last_name}")
+            add_to_config('USERS', 'USER_SAVE_LOCATION', get_app_data_folder(''))
+            return f"{get_app_data_folder('')}/{self.first_name}_{self.last_name}"
 
     @property
     def info(self):

@@ -95,6 +95,9 @@
  <tabstops>
   <tabstop>firstNameLineEdit</tabstop>
   <tabstop>lastNameLineEdit</tabstop>
+  <tabstop>phoneLineEdit</tabstop>
+  <tabstop>emailLineEdit</tabstop>
+  <tabstop>addressTextEdit</tabstop>
   <tabstop>wageLineEdit</tabstop>
  </tabstops>
  <resources/>
