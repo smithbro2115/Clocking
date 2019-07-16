@@ -1,4 +1,4 @@
-from Clock import Clock
+from Clock import Clock, delete_clock
 from Gui.AddCategoryDialog import Ui_addCategoryDialog
 from PyQt5 import QtWidgets, QtGui
 import qdarkstyle
@@ -96,6 +96,7 @@ def load_categories(user):
 def delete_category(user, category):
     path = f"{make_folder_if_it_does_not_exist(user.directory, 'Categories')}/Categories.csv"
     add_file_if_it_does_not_exist(path)
+    delete_clock(category.clock)
     return delete_dict_from_csv(path, category.info)
 
 

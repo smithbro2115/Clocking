@@ -1,8 +1,9 @@
 from datetime import datetime, timedelta
 from LocalFileHandling import add_to_csv_file, get_list_from_csv, add_file_if_it_does_not_exist, \
-    make_folder_if_it_does_not_exist, save_list_to_csv
+    make_folder_if_it_does_not_exist, save_list_to_csv, delete_file
 from Gui.DateAndTimeEdit import Ui_Dialog
-from PyQt5.QtWidgets import QDialog, QMenu
+from PyQt5.QtWidgets import QDialog, QMenu, QAction
+import qdarkstyle
 from PyQt5.QtCore import QDateTime, Qt
 
 
@@ -62,21 +63,31 @@ class Clock:
 
     def edit_row(self, row_number, old_rows, new_row):
         old_rows[row_number] = new_row
+        for index, value in enumerate(old_rows[row_number]):
+            old_rows[row_number][index] = str(value)
         self.save(old_rows)
 
     def edit_clock_time(self, row_number, column_number, new_time: datetime):
         old_rows = get_list_from_csv(self.file_path)
         row = old_rows[row_number]
         parsed_row = self.parse_row(row)
-        parsed_row[column_number] = new_time
+        parsed_row[column_number] = new_time - timedelta(microseconds=1)
         total_time = parsed_row[1] - parsed_row[0]
-        if total_time.seconds >= 0:
+        if total_time.total_seconds() >= 0:
+            self.total_monthly_time -= parsed_row[2]
+            self.total_monthly_time += total_time
             parsed_row[2] = total_time
-            row[column_number] = str(new_time)
-            print(parsed_row)
-            row[2] = str(self.convert_to_days(total_time))
+            parsed_row = parsed_row.copy()
+            row[2] = self.convert_to_days(total_time)
             self.edit_row(row_number, old_rows, row)
             return parsed_row
+
+    def delete_row(self, row_number):
+        old_rows = get_list_from_csv(self.file_path)
+        parsed_row = self.parse_row(old_rows[row_number])
+        self.total_monthly_time -= parsed_row[2]
+        old_rows.pop(row_number)
+        self.save(old_rows)
 
     def reset(self):
         self.total_monthly_time = timedelta()
@@ -121,6 +132,7 @@ class DateAndTimeEditDialog(QDialog):
         super(DateAndTimeEditDialog, self).__init__(parent=parent)
         self.ui = Ui_Dialog()
         self.ui.setupUi(self)
+        self.setStyleSheet(qdarkstyle.load_stylesheet_pyqt5())
         qdate = QDateTime()
         qdate.setSecsSinceEpoch(old_date_time.timestamp())
         self.ui.dateTimeEdit.setDateTime(qdate)
@@ -131,10 +143,30 @@ class DateAndTimeEditDialog(QDialog):
         return date_time_qt.toPyDateTime()
 
 
+class DateAndTimeContextMenu(QMenu):
+    def __init__(self, point, item, edit_function, delete_function, parent=None):
+        super(DateAndTimeContextMenu, self).__init__(parent)
+        self.item = item
+        self.edit_action = QAction("Edit")
+        self.edit_action.triggered.connect(lambda: edit_function(self.item))
+        self.addAction(self.edit_action)
+        self.delete_function = QAction("Delete")
+        self.delete_function.triggered.connect(lambda: delete_function(self.item.row()))
+        self.addAction(self.delete_function)
+        self.setStyleSheet(qdarkstyle.load_stylesheet_pyqt5())
+        point.setY(point.y()+38)
+        self.exec(point)
+
+
+def delete_clock(clock):
+    delete_file(clock.file_path)
+
+
 def get_new_date_time(parent):
-    old_time = parent.data(Qt.UserRole)
-    dialog = DateAndTimeEditDialog(old_time)
-    new_time = dialog.get_edited_time()
-    if dialog.result():
-        return new_time
-    return old_time
+    if isinstance(parent.data(Qt.UserRole), datetime):
+        old_time = parent.data(Qt.UserRole)
+        dialog = DateAndTimeEditDialog(old_time)
+        new_time = dialog.get_edited_time()
+        if dialog.result():
+            return new_time
+        return old_time

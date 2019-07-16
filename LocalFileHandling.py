@@ -156,3 +156,11 @@ def delete_directory(directory):
         return True
     except Exception:
         return False
+
+
+def delete_file(path):
+    try:
+        os.remove(path)
+        return True
+    except FileNotFoundError:
+        return False

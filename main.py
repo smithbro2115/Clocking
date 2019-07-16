@@ -3,7 +3,7 @@ from Gui import MainWindow
 from utils import are_you_sure_prompt, make_dir
 import qdarkstyle
 import Categories
-from Clock import get_new_date_time
+from Clock import get_new_date_time, DateAndTimeContextMenu
 from Users import add_user, load_users, delete_user, edit_user, move_user
 from datetime import timedelta, datetime
 from Exporting import make_invoice_excel, GetFileLocationDialog, get_file_invoice_name, get_invoice_folder_name
@@ -36,6 +36,8 @@ class Gui(MainWindow.Ui_MainWindow):
         self.actionEdit_Category.triggered.connect(self.edit_category_clicked)
         self.userAddAction_2.triggered.connect(self.add_user_button_clicked)
         self.actionDelete_User.triggered.connect(self.delete_user_clicked)
+        self.clockTableWidget.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.clockTableWidget.customContextMenuRequested.connect(self.table_right_clicked)
         self.actionEdit_User.triggered.connect(self.edit_user_clicked)
         self.clockTableWidget.itemDoubleClicked.connect(self.clock_table_edit_triggered)
         self.actionClock.triggered.connect(self.clock_button_clicked)
@@ -56,6 +58,12 @@ class Gui(MainWindow.Ui_MainWindow):
         self.addUserButton.clicked.connect(self.add_user_button_clicked)
         self.globalRadioButton.clicked.connect(lambda:
                                                self.set_monthly_time_and_income(self.current_clock.total_monthly_time))
+
+    def table_right_clicked(self, point):
+        item = self.clockTableWidget.itemAt(point)
+        if item:
+            DateAndTimeContextMenu(self.clockTableWidget.mapToGlobal(point), item,
+                                   self.clock_table_edit_triggered, self.clock_table_delete_triggered)
 
     def export_invoice(self, user, categories):
         if self.current_category:
@@ -96,7 +104,7 @@ class Gui(MainWindow.Ui_MainWindow):
     def global_monthly_income(self):
         seconds_wages = []
         for clock, wage in zip(self.get_all_clocks(), self.get_all_wages()):
-            seconds_wages.append((clock.total_monthly_time.seconds, wage))
+            seconds_wages.append((clock.total_monthly_time.total_seconds(), wage))
         return self.calculate_global_monthly_income(seconds_wages)
 
     @property
@@ -127,8 +135,16 @@ class Gui(MainWindow.Ui_MainWindow):
         new_date_time = get_new_date_time(item)
         if isinstance(new_date_time, datetime):
             row = self.current_clock.edit_clock_time(row_number, item.column(), new_date_time)
-            for index, item in enumerate(row):
-                self.set_next_item(row_number, index, item)
+            if row:
+                for index, item in enumerate(row):
+                    self.set_next_item(row_number, index, item)
+                self.set_monthly_time_and_income(self.current_clock.total_monthly_time)
+
+    def clock_table_delete_triggered(self, row):
+        if are_you_sure_prompt('Are you sure you want to delete this row?'):
+            self.current_clock.delete_row(row)
+            self.clockTableWidget.removeRow(row)
+            self.set_monthly_time_and_income(self.current_clock.total_monthly_time)
 
     def preferences_clicked(self):
         dialog = PreferenceDialog()
@@ -197,6 +213,7 @@ class Gui(MainWindow.Ui_MainWindow):
         self.reset_category()
 
     def reset_category(self):
+        self.set_monthly_time_and_income(timedelta())
         self.clockTableWidget.setRowCount(0)
         self.categoryBox.setCurrentIndex(-1)
         self.clockButton.setText('Clock In')
@@ -276,12 +293,12 @@ class Gui(MainWindow.Ui_MainWindow):
             total = self.global_monthly_time
             income = self.global_monthly_income
         else:
-            income = self.calculate_local_monthly_income(total.seconds)
+            income = self.calculate_local_monthly_income(total.total_seconds())
         self.set_monthly_total_time(total)
         self.set_monthly_total_income(income)
 
     def set_monthly_total_time(self, total):
-        seconds = total.seconds
+        seconds = total.total_seconds()
         self.totalTimeLabel.setText(f"Total Time: {format_duration_from_seconds(seconds)}")
 
     def get_all_clocks(self):
@@ -305,7 +322,10 @@ class Gui(MainWindow.Ui_MainWindow):
         return total_income
 
     def calculate_local_monthly_income(self, seconds):
-        return self.calculate_total_income(seconds, self.current_category.wage)
+        try:
+            return self.calculate_total_income(seconds, self.current_category.wage)
+        except AttributeError:
+            return self.calculate_total_income(seconds, 0)
 
     def calculate_total_income(self, seconds, wage):
         income = seconds / 3600 * float(wage)
@@ -328,7 +348,7 @@ class Gui(MainWindow.Ui_MainWindow):
             value = f"{format_time(value.time())}   |   {format_date(value.date())}"
         except AttributeError:
             try:
-                value = format_duration_from_seconds_with_seconds(value.seconds)
+                value = format_duration_from_seconds_with_seconds(value.total_seconds())
             except AttributeError:
                 pass
         return value
@@ -346,7 +366,7 @@ def format_duration_from_seconds(seconds):
     hours = seconds // 3600
     seconds = seconds - (hours*3600)
     minutes = seconds // 60
-    return f"{hours}:{minutes:02}"
+    return f"{round(hours)}:{round(minutes):02}"
 
 
 def format_duration_from_seconds_with_seconds(seconds):
@@ -354,7 +374,7 @@ def format_duration_from_seconds_with_seconds(seconds):
     seconds = seconds - (hours*3600)
     minutes = seconds // 60
     seconds = seconds - (minutes*60)
-    return f"{hours}:{minutes:02}:{seconds:02}"
+    return f"{round(hours)}:{round(minutes):02}:{round(seconds):02}"
 
 
 def format_time(time):
