@@ -132,7 +132,7 @@ def does_folder_exist(path):
 
 
 def get_app_data_folder(folder):
-    app_data_path = os.getenv('APPDATA')
+    app_data_path = '~/Library/Application Support'
     clocking_path = make_folder_if_it_does_not_exist(app_data_path, 'Clocking')
     return make_folder_if_it_does_not_exist(clocking_path, folder)
 
