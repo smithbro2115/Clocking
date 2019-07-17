@@ -1,7 +1,7 @@
 from Gui.AddButtonDialog import Ui_Dialog
 from PyQt5.QtCore import pyqtSignal, pyqtSlot, QObject, QRunnable, QThreadPool
 from PyQt5 import QtWidgets, QtCore
-from scapy.all import *
+from scapy.all import ARP, sniff
 import qdarkstyle
 import time
 
@@ -114,6 +114,7 @@ class ButtonIdentifier(QRunnable):
 		self.current_iteration = 0
 		self.should_go = False
 		self.identified = False
+		self.error = False
 		self.thread_pool = thread_pool
 
 	def get_addresses_for(self, seconds=6):
@@ -124,6 +125,7 @@ class ButtonIdentifier(QRunnable):
 	def found_one(self, address):
 		self.signals.found_one.emit(address)
 		self.possible_addresses[self.current_iteration].append(address)
+		self.possible_addresses[self.current_iteration] = list(set(self.possible_addresses[self.current_iteration]))
 
 	def try_to_identify(self):
 		addresses_that_exist_in_all_iterations = self.get_values_that_exist_in_all_lists(self.possible_addresses)
@@ -139,6 +141,7 @@ class ButtonIdentifier(QRunnable):
 					self.signals.identified_possible.emit(addresses_that_exist_in_all_iterations[0])
 			elif length == 0:
 				self.signals.restart.emit('There was a problem, please try again.')
+				self.error = True
 
 	@staticmethod
 	def get_values_that_exist_in_all_lists(list_of_lists):
@@ -151,27 +154,33 @@ class ButtonIdentifier(QRunnable):
 		if len(new_list) > 0:
 			return list(new_list)
 
+	def did_not_find_any_addresses(self):
+		print('did not find any')
+		self.times_did_not_find_any += 1
+		if self.times_did_not_find_any > 2:
+			self.signals.restart.emit('Did not find any possibilities, please try again')
+		else:
+			self.signals.did_not_find_any_addresses.emit()
+
+	def get_addresses(self):
+		while self.should_go:
+			self.possible_addresses.append([])
+			self.get_addresses_for()
+			if self.try_to_identify():
+				self.should_go = False
+				self.identified = True
+				break
+			if len(self.possible_addresses[self.current_iteration]) == 0:
+				self.did_not_find_any_addresses()
+			else:
+				self.current_iteration += 1
+				self.signals.run_another_iteration.emit()
+			self.should_go = False
+
 	@pyqtSlot()
 	def run(self):
 		while True:
-			while self.should_go:
-				self.possible_addresses.append([])
-				self.get_addresses_for()
-				if self.try_to_identify():
-					self.should_go = False
-					self.identified = True
-					break
-				if len(self.possible_addresses[self.current_iteration]) == 0:
-					print('did not find any')
-					self.times_did_not_find_any += 1
-					if self.times_did_not_find_any > 2:
-						self.signals.restart.emit('Did not find any possibilities, please try again')
-					else:
-						self.signals.did_not_find_any_addresses.emit()
-				else:
-					self.current_iteration += 1
-					self.signals.run_another_iteration.emit()
-				print('ran')
+			self.get_addresses()
 			if self.identified:
 				break
 			time.sleep(.1)
@@ -188,6 +197,7 @@ class SnifferThread(QRunnable):
 
 	@pyqtSlot()
 	def run(self):
+		print('running sniffer')
 		self.signals.found_one.emit(sniff(prn=self.found_one_callback, filter="arp", store=0))
 
 	def found_one_callback(self, pkt):
@@ -198,5 +208,4 @@ class SnifferThread(QRunnable):
 
 def arp_monitor_callback(pkt):
 	if ARP in pkt and pkt[ARP].op in (1, 2):
-		print(pkt[ARP].hwsrc)
 		return pkt[ARP].hwsrc
