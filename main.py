@@ -1,12 +1,12 @@
 from PyQt5 import QtGui, QtWidgets, QtCore
 from Gui import MainWindow
+from Buttons import AddButtonDialog
 from utils import are_you_sure_prompt, make_dir
 import qdarkstyle
 import Categories
 from Clock import get_new_date_time, DateAndTimeContextMenu
 from Users import add_user, load_users, delete_user, edit_user, move_user
 from datetime import timedelta, datetime
-from Exporting import make_invoice_excel, GetFileLocationDialog, get_file_invoice_name, get_invoice_folder_name
 from Preferences import PreferenceDialog
 from configparser import NoSectionError
 from LocalFileHandling import delete_directory, read_from_config, get_app_data_folder, add_to_config
@@ -46,6 +46,7 @@ class Gui(MainWindow.Ui_MainWindow):
         self.actionPreferences.triggered.connect(self.preferences_clicked)
         self.load_users()
         self.load_config()
+        dialog = AddButtonDialog()
         if self.userBox.currentIndex() < 0:
             self.categoryBox.setEnabled(False)
             self.addCategoryButton.setEnabled(False)
@@ -66,6 +67,7 @@ class Gui(MainWindow.Ui_MainWindow):
                                    self.clock_table_edit_triggered, self.clock_table_delete_triggered)
 
     def export_invoice(self, user, categories):
+        from Exporting import make_invoice_excel, GetFileLocationDialog, get_file_invoice_name
         if self.current_category:
             dialog = GetFileLocationDialog(get_file_invoice_name(user))
             result = dialog.get_save_path()
@@ -76,6 +78,7 @@ class Gui(MainWindow.Ui_MainWindow):
         self.export_invoices(self.users)
 
     def export_invoices(self, users):
+        from Exporting import make_invoice_excel, GetFileLocationDialog, get_file_invoice_name, get_invoice_folder_name
         folder_name = get_invoice_folder_name()
         dialog = GetFileLocationDialog(folder_name)
         path = dialog.get_save_path()
