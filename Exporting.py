@@ -66,7 +66,7 @@ def add_category_to_invoice(category, df):
         if not df.cell(row=i, column=1).value:
             date = datetime.now()
             df.cell(row=i, column=1).value = date.date()
-            df.cell(row=i, column=2).value = round(float(category.clock.total_monthly_time.seconds)/3600, 4)
+            df.cell(row=i, column=2).value = round(float(category.clock.total_monthly_time.total_seconds())/3600, 4)
             df.cell(row=i, column=3).value = category.category_number
             df.cell(row=i, column=4).value = category.description
             df.cell(row=i, column=8).value = category.wage

@@ -1,10 +1,10 @@
-from PyQt5 import QtGui, QtWidgets, QtCore
+from PyQt5 import QtWidgets, QtCore
 from Gui import MainWindow
-from Buttons import AddButtonDialog
-from utils import are_you_sure_prompt, make_dir
+from utils import are_you_sure_prompt, make_dir, ChoiceDialog
 import qdarkstyle
 import Categories
-from Clock import get_new_date_time, DateAndTimeContextMenu
+from Buttons import AddButtonDialog
+from Clock import get_new_date_time, DateAndTimeContextMenu, delete_clock
 from Users import add_user, load_users, delete_user, edit_user, move_user
 from datetime import timedelta, datetime
 from Preferences import PreferenceDialog
@@ -41,12 +41,12 @@ class Gui(MainWindow.Ui_MainWindow):
         self.actionEdit_User.triggered.connect(self.edit_user_clicked)
         self.clockTableWidget.itemDoubleClicked.connect(self.clock_table_edit_triggered)
         self.actionClock.triggered.connect(self.clock_button_clicked)
-        self.actionExport_Invoice.triggered.connect(lambda: self.export_invoice(self.current_user, self.categories))
+        self.actionExport_Invoice.triggered.connect(lambda: self.export_invoice_triggered(self.current_user, self.categories))
         self.actionExport_All_Invoices.triggered.connect(self.export_all_invoices)
         self.actionPreferences.triggered.connect(self.preferences_clicked)
+        self.actionAdd_Button.triggered.connect(self.add_button_action_triggered)
         self.load_users()
         self.load_config()
-        dialog = AddButtonDialog()
         if self.userBox.currentIndex() < 0:
             self.categoryBox.setEnabled(False)
             self.addCategoryButton.setEnabled(False)
@@ -60,19 +60,35 @@ class Gui(MainWindow.Ui_MainWindow):
         self.globalRadioButton.clicked.connect(lambda:
                                                self.set_monthly_time_and_income(self.current_clock.total_monthly_time))
 
+    def add_button_action_triggered(self):
+        dialog = AddButtonDialog()
+        if dialog.result():
+            print(dialog.address)
+
     def table_right_clicked(self, point):
         item = self.clockTableWidget.itemAt(point)
         if item:
             DateAndTimeContextMenu(self.clockTableWidget.mapToGlobal(point), item,
                                    self.clock_table_edit_triggered, self.clock_table_delete_triggered)
 
-    def export_invoice(self, user, categories):
+    def export_invoice_triggered(self, user, categories):
         from Exporting import make_invoice_excel, GetFileLocationDialog, get_file_invoice_name
         if self.current_category:
-            dialog = GetFileLocationDialog(get_file_invoice_name(user))
-            result = dialog.get_save_path()
+            file_location_dialog = GetFileLocationDialog(get_file_invoice_name(user))
+            result = file_location_dialog.get_save_path()
             if result:
-                make_invoice_excel(user, categories, path=result)
+                delete_clocks_dialog = ChoiceDialog('Do you want to reset all the clocks for this user?', 'EXPORTING',
+                                                    'reset_clocks_after_export')
+                if delete_clocks_dialog.result():
+                    make_invoice_excel(user, categories, path=result)
+                    self.handle_delete_clocks(user, delete_clocks_dialog.yes_or_no)
+
+    def handle_delete_clocks(self, user, result):
+        if result:
+            if user == self.current_user:
+                self.reset_current_clocks()
+            else:
+                self.delete_all_users_clocks(user)
 
     def export_all_invoices(self):
         self.export_invoices(self.users)
@@ -363,6 +379,21 @@ class Gui(MainWindow.Ui_MainWindow):
     def clock_out_table(self, time, total_time):
         self.set_next_item(self.clockTableWidget.rowCount() - 1, 1, time)
         self.set_next_item(self.clockTableWidget.rowCount() - 1, 2, total_time)
+
+    def delete_all_users_clocks(self, user):
+        categories = Categories.load_categories(user)
+        for clock in [category.clock for category in categories]:
+            delete_clock(clock)
+
+    def reset_current_clocks(self):
+        self.delete_all_users_clocks(self.current_user)
+        current_user_index = self.userBox.currentIndex()
+        current_category_index = self.categoryBox.currentIndex()
+        self.userBox.clear()
+        self.load_users()
+        self.userBox.setCurrentIndex(current_user_index)
+        self.reset_category()
+        self.categoryBox.setCurrentIndex(current_category_index)
 
 
 def format_duration_from_seconds(seconds):

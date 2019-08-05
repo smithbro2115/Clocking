@@ -1,7 +1,8 @@
 from Gui.AddButtonDialog import Ui_Dialog
 from PyQt5.QtCore import pyqtSignal, pyqtSlot, QObject, QRunnable, QThreadPool
-from PyQt5 import QtWidgets, QtCore
-from scapy.all import ARP, sniff
+from PyQt5 import QtWidgets
+from scapy.all import *
+from utils import error_dialog
 import qdarkstyle
 import time
 
@@ -11,16 +12,16 @@ class AddButtonDialog(QtWidgets.QDialog):
 		super(AddButtonDialog, self).__init__(parent=parent)
 		self.ui = Ui_Dialog()
 		self.ui.setupUi(self)
+		self.ui.okPushButton.setEnabled(False)
+		self.ui.okPushButton.clicked.connect(self.accept)
+		self.ui.cancelPushButton.clicked.connect(self.reject)
 		self.timed_emitter = TimedEmitter(1, 4)
+		self.address = None
 		self.reset_labels()
 		self.setStyleSheet(qdarkstyle.load_stylesheet_pyqt5())
-		# self.ui.buttonBox.setEnabled(False)
 		self.thread_pool = QThreadPool()
-		self.button_identifier = ButtonIdentifier(self.thread_pool)
-		self.button_identifier.signals.run_another_iteration.connect(self.restart)
-		self.button_identifier.signals.found_one.connect(self.found_one)
-		self.button_identifier.signals.identified_certain.connect(self.identified)
-		self.thread_pool.start(self.button_identifier)
+		self.button_identifier = None
+		self.make_button_identifier()
 		self.ui.startButton.clicked.connect(self.start)
 		self.position = 0
 		self.exec()
@@ -35,8 +36,21 @@ class AddButtonDialog(QtWidgets.QDialog):
 		self.timed_emitter.signals.finished.connect(self.get_addresses)
 		self.position = 0
 
+	def reset(self, msg):
+		error_dialog(msg)
+		self.make_button_identifier()
+		self.reset_labels()
+		self.ui.listWidget.clear()
+
+	def make_button_identifier(self):
+		self.button_identifier = ButtonIdentifier(self.thread_pool)
+		self.button_identifier.signals.run_another_iteration.connect(self.restart)
+		self.button_identifier.signals.found_one.connect(self.found_one)
+		self.button_identifier.signals.identified_certain.connect(self.identified)
+		self.button_identifier.signals.restart.connect(self.reset)
+		self.thread_pool.start(self.button_identifier)
+
 	def restart(self):
-		print('\nrestarted')
 		self.reset_labels()
 		self.start()
 
@@ -59,7 +73,11 @@ class AddButtonDialog(QtWidgets.QDialog):
 		self.button_identifier.should_go = True
 
 	def identified(self, address):
-		print(f"Identified {address} as the button")
+		self.ui.buttonAddressLabel.setText(f"Button Address: {address}")
+		self.address = address
+		self.ui.okPushButton.setEnabled(True)
+		self.ui.startButton.setEnabled(False)
+		del self.button_identifier
 
 	def found_one(self, address):
 		self.ui.listWidget.addItem(address)
@@ -107,20 +125,21 @@ class ButtonIdentifier(QRunnable):
 		super(ButtonIdentifier, self).__init__()
 		self.signals = ButtonIdentifierSignals()
 		self.go = False
-		self.sniffer = SnifferThread()
+		self.thread_pool = thread_pool
+		self.sniffer = SnifferThread(8)
 		self.sniffer.signals.found_one.connect(self.found_one)
+		self.thread_pool.start(self.sniffer)
 		self.possible_addresses = []
 		self.times_did_not_find_any = 0
 		self.current_iteration = 0
 		self.should_go = False
 		self.identified = False
 		self.error = False
-		self.thread_pool = thread_pool
 
-	def get_addresses_for(self, seconds=6):
-		self.thread_pool.start(self.sniffer)
+	def get_addresses_for(self, seconds=8):
+		self.sniffer.should_go = True
 		time.sleep(seconds)
-		print('got addresses')
+		# del self.sniffer
 
 	def found_one(self, address):
 		self.signals.found_one.emit(address)
@@ -129,11 +148,9 @@ class ButtonIdentifier(QRunnable):
 
 	def try_to_identify(self):
 		addresses_that_exist_in_all_iterations = self.get_values_that_exist_in_all_lists(self.possible_addresses)
-		print('test', addresses_that_exist_in_all_iterations, self.possible_addresses)
 		if addresses_that_exist_in_all_iterations:
 			length = len(addresses_that_exist_in_all_iterations)
 			if length == 1:
-				print(self.current_iteration)
 				if self.current_iteration > 1:
 					self.signals.identified_certain.emit(addresses_that_exist_in_all_iterations[0])
 					return True
@@ -142,6 +159,9 @@ class ButtonIdentifier(QRunnable):
 			elif length == 0:
 				self.signals.restart.emit('There was a problem, please try again.')
 				self.error = True
+		else:
+			self.signals.restart.emit('There was a problem, please try again.')
+			self.error = True
 
 	@staticmethod
 	def get_values_that_exist_in_all_lists(list_of_lists):
@@ -155,7 +175,6 @@ class ButtonIdentifier(QRunnable):
 			return list(new_list)
 
 	def did_not_find_any_addresses(self):
-		print('did not find any')
 		self.times_did_not_find_any += 1
 		if self.times_did_not_find_any > 2:
 			self.signals.restart.emit('Did not find any possibilities, please try again')
@@ -163,26 +182,30 @@ class ButtonIdentifier(QRunnable):
 			self.signals.did_not_find_any_addresses.emit()
 
 	def get_addresses(self):
-		while self.should_go:
-			self.possible_addresses.append([])
-			self.get_addresses_for()
-			if self.try_to_identify():
-				self.should_go = False
-				self.identified = True
-				break
-			if len(self.possible_addresses[self.current_iteration]) == 0:
-				self.did_not_find_any_addresses()
-			else:
-				self.current_iteration += 1
-				self.signals.run_another_iteration.emit()
+		self.possible_addresses.append([])
+		self.get_addresses_for()
+		if self.try_to_identify():
 			self.should_go = False
+			self.identified = True
+			return None
+		if self.error:
+			self.should_go = False
+			return None
+		if len(self.possible_addresses[self.current_iteration]) == 0:
+			self.did_not_find_any_addresses()
+		else:
+			self.current_iteration += 1
+			self.signals.run_another_iteration.emit()
+		self.should_go = False
 
 	@pyqtSlot()
 	def run(self):
 		while True:
-			self.get_addresses()
+			if self.should_go:
+				self.get_addresses()
 			if self.identified:
 				break
+
 			time.sleep(.1)
 
 
@@ -191,14 +214,19 @@ class SnifferSignals(QObject):
 
 
 class SnifferThread(QRunnable):
-	def __init__(self):
+	def __init__(self, timeout):
 		super(SnifferThread, self).__init__()
 		self.signals = SnifferSignals()
+		self.timeout = timeout
+		self.should_go = False
 
 	@pyqtSlot()
 	def run(self):
-		print('running sniffer')
-		self.signals.found_one.emit(sniff(prn=self.found_one_callback, filter="arp", store=0))
+		while True:
+			while self.should_go:
+				sniff(prn=self.found_one_callback, filter="arp", store=0, timeout=self.timeout)
+				self.should_go = False
+			time.sleep(.1)
 
 	def found_one_callback(self, pkt):
 		address = arp_monitor_callback(pkt)
