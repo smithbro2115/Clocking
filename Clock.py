@@ -114,10 +114,18 @@ class Clock:
         try:
             if rows[-1][1] == "0:00:00":
                 self.state = True
-                self.current_time = datetime.strptime(rows[-1][0], '%Y-%m-%d %H:%M:%S.%f')
+                self.set_current_time_to_cell(rows[-1][0])
                 return True
+            self.state = False
         except IndexError:
+            self.state = False
             return False
+
+    def set_current_time_to_cell(self, cell):
+        try:
+            self.current_time = datetime.strptime(cell, '%Y-%m-%d %H:%M:%S.%f')
+        except TypeError:
+            self.current_time = cell
 
 
 def format_time_from_seconds(seconds):

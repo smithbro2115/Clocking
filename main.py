@@ -286,12 +286,19 @@ class Gui(MainWindow.Ui_MainWindow):
     def category_box_changed(self):
         self.current_category = self.categoryBox.currentData()
 
+    def update_table(self):
+        original_state = self.current_clock.state
+        print(f"original state: {original_state}")
+        self.load_clock()
+        return original_state != self.current_clock.state
+
     def load_clock(self):
         self.current_clock = self.current_category.clock
         self.current_clock.active = False
         self.clockTableWidget.setRowCount(0)
         self.current_clock.active = True
         rows = self.current_clock.load()
+        print(f"clock state: {self.current_clock.state}")
         self.load_clock_data_into_table(rows)
         self.set_monthly_time_and_income(self.current_clock.total_monthly_time)
         self.set_button_text(self.current_clock.state)
@@ -304,13 +311,23 @@ class Gui(MainWindow.Ui_MainWindow):
 
     def clock_button_clicked(self):
         if self.current_category:
-            time = self.current_clock.clock()
-            self.set_button_text(self.current_clock.state)
-            self.set_monthly_time_and_income(self.current_clock.total_monthly_time)
-            if self.current_clock.state:
-                self.clock_in_table(time)
+            if self.update_table():
+                print('different')
+                result = are_you_sure_prompt("This clock has already been modified somewhere else, "
+                                             "are you sure you want to do this?")
+                if result:
+                    self.clock()
             else:
-                self.clock_out_table(time[0], time[1])
+                self.clock()
+
+    def clock(self):
+        time = self.current_clock.clock()
+        self.set_button_text(self.current_clock.state)
+        self.set_monthly_time_and_income(self.current_clock.total_monthly_time)
+        if self.current_clock.state:
+            self.clock_in_table(time)
+        else:
+            self.clock_out_table(time[0], time[1])
 
     def set_button_text(self, state):
         if state:

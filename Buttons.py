@@ -248,3 +248,7 @@ class SnifferThread(QRunnable):
 def arp_monitor_callback(pkt):
 	if ARP in pkt and pkt[ARP].op in (1, 2):
 		return pkt[ARP].hwsrc
+
+
+def sniff(call_back):
+	sniff(prn=call_back, filter="arp", store=0)
