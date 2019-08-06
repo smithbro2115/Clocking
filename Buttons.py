@@ -250,5 +250,5 @@ def arp_monitor_callback(pkt):
 		return pkt[ARP].hwsrc
 
 
-def sniff(call_back):
+def sniff_for_arps(call_back):
 	sniff(prn=call_back, filter="arp", store=0)

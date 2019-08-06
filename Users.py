@@ -165,6 +165,7 @@ def edit_user(user):
 
 
 def get_user_path_from_user_name(user_name):
+    user_name = f"{user_name}_user.csv"
     for user_path in get_user_file_paths():
         if user_path.endswith(user_name):
             return user_path
