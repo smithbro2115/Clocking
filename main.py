@@ -1,6 +1,6 @@
 from PyQt5 import QtWidgets, QtCore
 from Gui import MainWindow
-from utils import are_you_sure_prompt, make_dir, ChoiceDialog
+from utils import are_you_sure_prompt, make_dir, ChoiceDialog, resource_path
 import qdarkstyle
 import Categories
 from Buttons import AddButtonDialog

@@ -1,13 +1,15 @@
 import openpyxl
 from openpyxl import styles
-from LocalFileHandling import get_app_data_folder, make_folder_if_it_does_not_exist
+from LocalFileHandling import make_folder_if_it_does_not_exist
 from datetime import datetime
 from Company import Company
+from utils import resource_path
 from PyQt5 import QtWidgets
 import os
 
 
-invoice_template_path = f"{get_app_data_folder('')}/Invoice.xlsx"
+invoice_template_path = resource_path("Invoice.xlsx")
+print(invoice_template_path)
 align = styles.Alignment(horizontal='left')
 font = styles.Font(size=12)
 default_company = Company(name='Brinkman Adventures', address='13939 N. Cedarburg Rd. Mequon, WI 53097',

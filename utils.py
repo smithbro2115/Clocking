@@ -7,6 +7,7 @@ from LocalFileHandling import add_to_config, read_from_config
 import qdarkstyle
 import os
 from configparser import NoSectionError, NoOptionError
+import sys
 
 
 def disconnect_all_signals(*args):
@@ -117,3 +118,11 @@ def make_dir(directory):
     if not does_folder_exist(directory):
         os.makedirs(directory)
     return directory
+
+
+def resource_path(relative_path):
+    try:
+        base_path = sys._MEIPASS
+    except AttributeError:
+        base_path = os.path.abspath('.')
+    return os.path.join(base_path, relative_path)
