@@ -12,6 +12,8 @@ class PreferenceDialog(QtWidgets.QDialog):
         self.ui.setupUi(self)
         self.user_location_changed = False
         self.reset_clocks_after_export_changed = False
+        self.dash_buttons_activated_changed = False
+        self.dash_buttons_activated = None
         self.setStyleSheet(qdarkstyle.load_stylesheet_pyqt5())
         self.ui.browseUserSaveLoationButton.clicked.connect(self.browse_for_folder)
         self.previous_user_save_location = read_from_config('USERS', 'USER_SAVE_LOCATION')
@@ -26,6 +28,13 @@ class PreferenceDialog(QtWidgets.QDialog):
             pass
         self.ui.userSaveLocationLineEdit.textChanged.connect(self.user_loc_changed)
         self.ui.resetClocksAfterExportingInvoicesRadioButton.clicked.connect(self.reset_clocks_export_changed)
+
+    def setup_dash_button_prefs(self):
+        try:
+            self.dash_buttons_activated = bool(int(read_from_config('EXPORTING', 'reset_clocks_after_export')))
+            self.ui.resetClocksAfterExportingInvoicesRadioButton.setChecked(self.reset_clocks_after_export)
+        except (NoSectionError, NoOptionError):
+            self.reset_clocks_after_export = None
 
     def user_loc_changed(self):
         self.user_location_changed = True
@@ -45,6 +54,8 @@ class PreferenceDialog(QtWidgets.QDialog):
         if self.reset_clocks_after_export_changed:
             add_to_config('EXPORTING', 'reset_clocks_after_export',
                           int(self.ui.resetClocksAfterExportingInvoicesRadioButton.isChecked()))
+        if self.reset_clocks_after_export_changed:
+            add_to_config('BUTTONS', 'activated', int(self.ui.amazonButtonsRadioButton.isChecked()))
         super(PreferenceDialog, self).accept()
 
 

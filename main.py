@@ -21,6 +21,7 @@ class Gui(MainWindow.Ui_MainWindow):
         self._current_user = None
         self._current_category = None
         self.current_clock = None
+        self.buttons_activated = False
         self.buttons_file_path = f"{get_app_data_folder('Buttons')}/Buttons.csv"
         self._global_monthly_time = timedelta()
 
@@ -63,6 +64,14 @@ class Gui(MainWindow.Ui_MainWindow):
         self.addUserButton.clicked.connect(self.add_user_button_clicked)
         self.globalRadioButton.clicked.connect(lambda:
                                                self.set_monthly_time_and_income(self.current_clock.total_monthly_time))
+
+    def activate_dash_buttons(self):
+        if not bool(int(read_from_config("BUTTONS", 'setup'))):
+            add_to_config('BUTTONS', 'setup', 1)
+
+    def deactivate_dash_buttons(self):
+        if bool(int(read_from_config("BUTTONS", 'setup'))):
+            add_to_config('BUTTONS', 'setup', 0)
 
     def add_button_action_triggered(self):
         dialog = AddButtonDialog()
@@ -288,7 +297,6 @@ class Gui(MainWindow.Ui_MainWindow):
 
     def update_table(self):
         original_state = self.current_clock.state
-        print(f"original state: {original_state}")
         self.load_clock()
         return original_state != self.current_clock.state
 
@@ -299,7 +307,6 @@ class Gui(MainWindow.Ui_MainWindow):
         self.current_clock.active = True
         rows = self.current_clock.load()
         self.current_clock.check_if_clocked_in(rows)
-        print(f"clock state: {self.current_clock.state}")
         self.load_clock_data_into_table(rows)
         self.set_monthly_time_and_income(self.current_clock.total_monthly_time)
         self.set_button_text(self.current_clock.state)
@@ -313,7 +320,6 @@ class Gui(MainWindow.Ui_MainWindow):
     def clock_button_clicked(self):
         if self.current_category:
             if self.update_table():
-                print('different')
                 result = are_you_sure_prompt("This clock has already been modified somewhere else, "
                                              "are you sure you want to do this?")
                 if result:
