@@ -2,7 +2,7 @@ from Gui.AddUserDialog import Ui_AddUserDialog
 from PyQt5 import QtWidgets, QtGui
 import qdarkstyle
 from utils import cannot_except_dialog, make_dir
-from LocalFileHandling import get_app_data_folder, add_dict_to_csv_file, add_file_if_it_does_not_exist, \
+from LocalFileHandling import get_app_data_folder, add_dict_to_list_csv_file, add_file_if_it_does_not_exist, \
     make_folder_if_it_does_not_exist, get_dicts_from_csv, read_from_config, add_to_config, does_folder_exist, \
     delete_directory
 import os
@@ -84,7 +84,7 @@ class User:
                 'phone_number': self.phone_number, 'email': self.email, 'address': self.address}
 
     def save(self):
-        add_dict_to_csv_file(self.file_path, self.info, keyword='last_name')
+        add_dict_to_list_csv_file(self.file_path, self.info, keyword='last_name')
 
 
 def add_user():
@@ -162,3 +162,9 @@ def edit_user(user):
         f"{dialog.ui.lastNameLineEdit.text()}"
     shutil.move(user.directory, new_directory)
     return make_user(dialog)
+
+
+def get_user_path_from_user_name(user_name):
+    for user_path in get_user_file_paths():
+        if user_path.endswith(user_name):
+            return user_path

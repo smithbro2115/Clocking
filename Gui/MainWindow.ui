@@ -306,6 +306,7 @@
      <string>Buttons</string>
     </property>
     <addaction name="actionAdd_Button"/>
+    <addaction name="actionAssign_Buttons"/>
    </widget>
    <widget class="QMenu" name="menuEdit">
     <property name="title">
@@ -478,6 +479,11 @@
    </property>
    <property name="shortcutVisibleInContextMenu">
     <bool>true</bool>
+   </property>
+  </action>
+  <action name="actionAssign_Buttons">
+   <property name="text">
+    <string>Assign Buttons</string>
    </property>
   </action>
  </widget>

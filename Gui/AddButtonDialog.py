@@ -11,7 +11,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_Dialog(object):
     def setupUi(self, Dialog):
         Dialog.setObjectName("Dialog")
-        Dialog.resize(422, 181)
+        Dialog.resize(422, 197)
         Dialog.setSizeGripEnabled(False)
         Dialog.setModal(False)
         self.gridLayout = QtWidgets.QGridLayout(Dialog)
@@ -85,10 +85,10 @@ class Ui_Dialog(object):
         self.horizontalLayout.setObjectName("horizontalLayout")
         spacerItem = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
         self.horizontalLayout.addItem(spacerItem)
-        self.okPushButton = QtWidgets.QPushButton(self.horizontalWidget)
-        self.okPushButton.setMaximumSize(QtCore.QSize(65, 16777215))
-        self.okPushButton.setObjectName("okPushButton")
-        self.horizontalLayout.addWidget(self.okPushButton)
+        self.addPushButton = QtWidgets.QPushButton(self.horizontalWidget)
+        self.addPushButton.setMaximumSize(QtCore.QSize(65, 16777215))
+        self.addPushButton.setObjectName("addPushButton")
+        self.horizontalLayout.addWidget(self.addPushButton)
         self.cancelPushButton = QtWidgets.QPushButton(self.horizontalWidget)
         self.cancelPushButton.setMaximumSize(QtCore.QSize(65, 16777215))
         self.cancelPushButton.setLayoutDirection(QtCore.Qt.LeftToRight)
@@ -110,6 +110,6 @@ class Ui_Dialog(object):
         self.goLabel.setText(_translate("Dialog", "GO"))
         self.threeLabel.setText(_translate("Dialog", "3"))
         self.startButton.setText(_translate("Dialog", "Start"))
-        self.okPushButton.setText(_translate("Dialog", "Ok"))
+        self.addPushButton.setText(_translate("Dialog", "Add"))
         self.cancelPushButton.setText(_translate("Dialog", "Cancel"))
 

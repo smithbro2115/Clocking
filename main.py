@@ -4,12 +4,14 @@ from utils import are_you_sure_prompt, make_dir, ChoiceDialog
 import qdarkstyle
 import Categories
 from Buttons import AddButtonDialog
+from Gui.CustomPyQtDialogsAndWidgets import AssignButtonDialog
 from Clock import get_new_date_time, DateAndTimeContextMenu, delete_clock
 from Users import add_user, load_users, delete_user, edit_user, move_user
 from datetime import timedelta, datetime
 from Preferences import PreferenceDialog
 from configparser import NoSectionError
-from LocalFileHandling import delete_directory, read_from_config, get_app_data_folder, add_to_config
+from LocalFileHandling import delete_directory, read_from_config, get_app_data_folder, add_to_config, \
+    add_to_dict_from_csv_file, read_dict_from_csv_file, convert_string_tuple_into_tuple_dict, save_dict_to_csv_file
 
 
 class Gui(MainWindow.Ui_MainWindow):
@@ -19,6 +21,7 @@ class Gui(MainWindow.Ui_MainWindow):
         self._current_user = None
         self._current_category = None
         self.current_clock = None
+        self.buttons_file_path = f"{get_app_data_folder('Buttons')}/Buttons.csv"
         self._global_monthly_time = timedelta()
 
     def setup_additional(self, main_window):
@@ -45,6 +48,7 @@ class Gui(MainWindow.Ui_MainWindow):
         self.actionExport_All_Invoices.triggered.connect(self.export_all_invoices)
         self.actionPreferences.triggered.connect(self.preferences_clicked)
         self.actionAdd_Button.triggered.connect(self.add_button_action_triggered)
+        self.actionAssign_Buttons.triggered.connect(self.assign_buttons_action_triggered)
         self.load_users()
         self.load_config()
         if self.userBox.currentIndex() < 0:
@@ -63,7 +67,14 @@ class Gui(MainWindow.Ui_MainWindow):
     def add_button_action_triggered(self):
         dialog = AddButtonDialog()
         if dialog.result():
-            print(dialog.address)
+            add_to_dict_from_csv_file(self.buttons_file_path, {dialog.address: (None, None)})
+
+    def assign_buttons_action_triggered(self):
+        buttons = convert_string_tuple_into_tuple_dict(read_dict_from_csv_file(self.buttons_file_path))
+        dialog = AssignButtonDialog(buttons, self.users)
+        dialog.exec_()
+        if dialog.result():
+            save_dict_to_csv_file(self.buttons_file_path, dialog.new_button_dict)
 
     def table_right_clicked(self, point):
         item = self.clockTableWidget.itemAt(point)

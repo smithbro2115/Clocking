@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'C:\Users\Josh\PycharmProjects\Clocking\Gui\MainWindow.ui'
+# Form implementation generated from reading ui file 'Z:\Employee Folders\Josh\Programs\Clocking\Gui\MainWindow.ui'
 #
 # Created by: PyQt5 UI code generator 5.11.3
 #
@@ -229,11 +229,14 @@ class Ui_MainWindow(object):
         self.actionClock = QtWidgets.QAction(MainWindow)
         self.actionClock.setShortcutVisibleInContextMenu(True)
         self.actionClock.setObjectName("actionClock")
+        self.actionAssign_Buttons = QtWidgets.QAction(MainWindow)
+        self.actionAssign_Buttons.setObjectName("actionAssign_Buttons")
         self.menuFile.addAction(self.actionExport_Invoice)
         self.menuFile.addAction(self.actionExport_All_Invoices)
         self.menuFile.addSeparator()
         self.menuFile.addAction(self.actionPreferences)
         self.menuButtons.addAction(self.actionAdd_Button)
+        self.menuButtons.addAction(self.actionAssign_Buttons)
         self.menuEdit.addAction(self.userAddAction_2)
         self.menuEdit.addAction(self.actionEdit_User)
         self.menuEdit.addAction(self.actionDelete_User)
@@ -295,4 +298,5 @@ class Ui_MainWindow(object):
         self.actionExport_All_Invoices.setShortcut(_translate("MainWindow", "Ctrl+Shift+I"))
         self.actionClock.setText(_translate("MainWindow", "Clock"))
         self.actionClock.setShortcut(_translate("MainWindow", "Space"))
+        self.actionAssign_Buttons.setText(_translate("MainWindow", "Assign Buttons"))
 

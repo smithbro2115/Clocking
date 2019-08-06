@@ -12,8 +12,8 @@ class AddButtonDialog(QtWidgets.QDialog):
 		super(AddButtonDialog, self).__init__(parent=parent)
 		self.ui = Ui_Dialog()
 		self.ui.setupUi(self)
-		self.ui.okPushButton.setEnabled(False)
-		self.ui.okPushButton.clicked.connect(self.accept)
+		self.ui.addPushButton.setEnabled(False)
+		self.ui.addPushButton.clicked.connect(self.accept)
 		self.ui.cancelPushButton.clicked.connect(self.reject)
 		self.timed_emitter = TimedEmitter(1, 4)
 		self.address = None
@@ -24,7 +24,7 @@ class AddButtonDialog(QtWidgets.QDialog):
 		self.make_button_identifier()
 		self.ui.startButton.clicked.connect(self.start)
 		self.position = 0
-		self.exec()
+		self.exec_()
 
 	def reset_labels(self):
 		labels = [self.ui.oneLabel, self.ui.twoLabel, self.ui.threeLabel, self.ui.goLabel]
@@ -75,9 +75,10 @@ class AddButtonDialog(QtWidgets.QDialog):
 	def identified(self, address):
 		self.ui.buttonAddressLabel.setText(f"Button Address: {address}")
 		self.address = address
-		self.ui.okPushButton.setEnabled(True)
+		self.ui.addPushButton.setEnabled(True)
 		self.ui.startButton.setEnabled(False)
 		del self.button_identifier
+		self.timed_emitter.canceled = True
 
 	def found_one(self, address):
 		self.ui.listWidget.addItem(address)
@@ -101,10 +102,13 @@ class TimedEmitter(QRunnable):
 		self.time_between = time_between_emits
 		self.times_to_emit = times_to_emit
 		self.times_emitted = 0
+		self.canceled = False
 
 	@pyqtSlot()
 	def run(self):
 		while self.times_emitted < self.times_to_emit:
+			if self.canceled:
+				break
 			time.sleep(self.time_between)
 			self.signals.time_elapsed.emit()
 			self.times_emitted += 1
@@ -135,6 +139,9 @@ class ButtonIdentifier(QRunnable):
 		self.should_go = False
 		self.identified = False
 		self.error = False
+
+	def __del__(self):
+		self.sniffer.stop()
 
 	def get_addresses_for(self, seconds=8):
 		self.sniffer.should_go = True
@@ -219,10 +226,14 @@ class SnifferThread(QRunnable):
 		self.signals = SnifferSignals()
 		self.timeout = timeout
 		self.should_go = False
+		self._stop = False
+
+	def stop(self):
+		self._stop = True
 
 	@pyqtSlot()
 	def run(self):
-		while True:
+		while not self._stop:
 			while self.should_go:
 				sniff(prn=self.found_one_callback, filter="arp", store=0, timeout=self.timeout)
 				self.should_go = False

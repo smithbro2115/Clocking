@@ -4,7 +4,7 @@ from PyQt5 import QtWidgets, QtGui
 import qdarkstyle
 from utils import cannot_except_dialog, make_dir
 import os
-from LocalFileHandling import add_dict_to_csv_file, get_dicts_from_csv, \
+from LocalFileHandling import add_dict_to_list_csv_file, get_dicts_from_csv, \
     add_file_if_it_does_not_exist, make_folder_if_it_does_not_exist, delete_dict_from_csv
 
 
@@ -70,7 +70,7 @@ class Category:
                 'category_number': self.category_number, 'description': self.description}
 
     def save(self):
-        add_dict_to_csv_file(self.file_path, self.info)
+        add_dict_to_list_csv_file(self.file_path, self.info)
 
 
 def add_category(user):
