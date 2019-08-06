@@ -298,6 +298,7 @@ class Gui(MainWindow.Ui_MainWindow):
         self.clockTableWidget.setRowCount(0)
         self.current_clock.active = True
         rows = self.current_clock.load()
+        self.current_clock.check_if_clocked_in(rows)
         print(f"clock state: {self.current_clock.state}")
         self.load_clock_data_into_table(rows)
         self.set_monthly_time_and_income(self.current_clock.total_monthly_time)

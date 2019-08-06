@@ -111,6 +111,7 @@ class Clock:
         return row
 
     def check_if_clocked_in(self, rows):
+        print(rows[-1][1])
         try:
             if rows[-1][1] == "0:00:00":
                 self.state = True
