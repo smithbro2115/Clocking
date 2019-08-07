@@ -120,6 +120,25 @@ def make_dir(directory):
     return directory
 
 
+def move_file(path, new_path):
+    new_path = f"{new_path}/{path}".replace('\\', '/')
+    path = path.replace('\\', '/')
+    os.rename(path, new_path)
+    return new_path
+
+
+def delete_file(path):
+    os.remove(path)
+
+
+def start_program(path):
+    os.system(path)
+
+
+def close_program(name):
+    os.system(f"TASKKILL /F /IM {name}")
+
+
 def resource_path(relative_path):
     try:
         base_path = sys._MEIPASS

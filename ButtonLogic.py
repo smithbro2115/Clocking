@@ -4,6 +4,10 @@ from Categories import Category, load_categories
 from Users import load_user, get_user_path_from_user_name
 from Buttons import sniff_for_arps, arp_monitor_callback
 import time
+from plyer import notification
+from main import format_duration_from_seconds, format_time
+import traceback
+from utils import resource_path
 
 
 class ButtonListener:
@@ -20,10 +24,9 @@ class ButtonListener:
 			if time.time() - self.time_since_last_clocked > 2:
 				address = arp_monitor_callback(pkt)
 				category = self.get_assigned_category(address)
-				# print(category)
-				category.clock.clock()
+				clock_time = category.clock.clock()
 				self.time_since_last_clocked = time.time()
-				print(f"clocked {category.clock.state}: {category.name}")
+				self.send_notification(category.clock.state, clock_time)
 		except AttributeError:
 			pass
 
@@ -36,6 +39,18 @@ class ButtonListener:
 			return category
 		except KeyError:
 			pass
+
+	def send_notification(self, clocked_in, clock_time):
+		if clocked_in:
+			self.notify('Clocked In!', f'Clocked in at: {format_time(clock_time)}')
+		else:
+			self.notify('Clocked Out!', f'Clocked out at: {format_time(clock_time[0])}, for a total work time of: '
+						f'{format_duration_from_seconds(clock_time[1].total_seconds())}')
+
+	def notify(self, title, message):
+		manual_icon = "C:/Users/Josh/PycharmProjects/Clocking/clock_icon.ico"
+		auto = resource_path('clock_icon.ico').replace('\\', '/')
+		notification.notify(title=title, message=message, timeout=10, app_name="Clocking", app_icon=auto)
 
 	def get_button_assignments(self) -> dict:
 		add_file_if_it_does_not_exist(self.file_path)
@@ -51,4 +66,10 @@ def find_category_from_key_value(categories, key, value):
 			continue
 
 
-button_listener = ButtonListener()
+try:
+	button_listener = ButtonListener()
+except Exception:
+	traceback.print_exc()
+
+while True:
+	time.sleep(2)

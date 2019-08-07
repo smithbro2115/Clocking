@@ -28,19 +28,24 @@ class PreferenceDialog(QtWidgets.QDialog):
             pass
         self.ui.userSaveLocationLineEdit.textChanged.connect(self.user_loc_changed)
         self.ui.resetClocksAfterExportingInvoicesRadioButton.clicked.connect(self.reset_clocks_export_changed)
+        self.ui.amazonButtonsRadioButton.clicked.connect(self.dash_buttons_activated_changed_clicked)
 
     def setup_dash_button_prefs(self):
         try:
-            self.dash_buttons_activated = bool(int(read_from_config('EXPORTING', 'reset_clocks_after_export')))
-            self.ui.resetClocksAfterExportingInvoicesRadioButton.setChecked(self.reset_clocks_after_export)
+            self.dash_buttons_activated = bool(int(read_from_config('BUTTONS', 'activated')))
+            self.ui.amazonButtonsRadioButton.setChecked(self.dash_buttons_activated)
         except (NoSectionError, NoOptionError):
-            self.reset_clocks_after_export = None
+            self.dash_buttons_activated = None
 
     def user_loc_changed(self):
         self.user_location_changed = True
 
     def reset_clocks_export_changed(self):
         self.reset_clocks_after_export_changed = True
+
+    def dash_buttons_activated_changed_clicked(self):
+        self.dash_buttons_activated = self.ui.amazonButtonsRadioButton.isChecked()
+        self.dash_buttons_activated_changed = True
 
     def browse_for_folder(self):
         dialog = GetFolderLocationDialog(self.previous_user_save_location)
@@ -54,7 +59,7 @@ class PreferenceDialog(QtWidgets.QDialog):
         if self.reset_clocks_after_export_changed:
             add_to_config('EXPORTING', 'reset_clocks_after_export',
                           int(self.ui.resetClocksAfterExportingInvoicesRadioButton.isChecked()))
-        if self.reset_clocks_after_export_changed:
+        if self.dash_buttons_activated_changed:
             add_to_config('BUTTONS', 'activated', int(self.ui.amazonButtonsRadioButton.isChecked()))
         super(PreferenceDialog, self).accept()
 

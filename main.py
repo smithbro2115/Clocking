@@ -1,6 +1,8 @@
 from PyQt5 import QtWidgets, QtCore
 from Gui import MainWindow
-from utils import are_you_sure_prompt, make_dir, ChoiceDialog, resource_path
+from utils import are_you_sure_prompt, make_dir, ChoiceDialog, resource_path, move_file, start_program, close_program, \
+    delete_file
+import getpass
 import qdarkstyle
 import Categories
 from Buttons import AddButtonDialog
@@ -9,7 +11,7 @@ from Clock import get_new_date_time, DateAndTimeContextMenu, delete_clock
 from Users import add_user, load_users, delete_user, edit_user, move_user
 from datetime import timedelta, datetime
 from Preferences import PreferenceDialog
-from configparser import NoSectionError
+from configparser import NoSectionError, NoOptionError
 from LocalFileHandling import delete_directory, read_from_config, get_app_data_folder, add_to_config, \
     add_to_dict_from_csv_file, read_dict_from_csv_file, convert_string_tuple_into_tuple_dict, save_dict_to_csv_file
 
@@ -66,12 +68,28 @@ class Gui(MainWindow.Ui_MainWindow):
                                                self.set_monthly_time_and_income(self.current_clock.total_monthly_time))
 
     def activate_dash_buttons(self):
-        if not bool(int(read_from_config("BUTTONS", 'setup'))):
-            add_to_config('BUTTONS', 'setup', 1)
+        try:
+            if not bool(int(read_from_config("BUTTONS", 'setup'))):
+                path = resource_path('Clocking Buttons.exe')
+                new_path = move_file(path, self.get_startup_folder())
+                start_program(new_path)
+                add_to_config('BUTTONS', 'setup', 1)
+        except(NoSectionError, NoOptionError):
+                path = resource_path('Clocking Buttons.exe')
+                new_path = move_file(path, self.get_startup_folder())
+                start_program(new_path)
+                add_to_config('BUTTONS', 'setup', 1)
 
     def deactivate_dash_buttons(self):
         if bool(int(read_from_config("BUTTONS", 'setup'))):
+            path = f"{self.get_startup_folder()}/Clocking Buttons.exe"
+            close_program("Clocking Buttons.exe")
+            delete_file(path)
             add_to_config('BUTTONS', 'setup', 0)
+
+    def get_startup_folder(self):
+        USER_NAME = getpass.getuser()
+        return r'C:\Users\%s\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup' % USER_NAME
 
     def add_button_action_triggered(self):
         dialog = AddButtonDialog()
@@ -191,6 +209,11 @@ class Gui(MainWindow.Ui_MainWindow):
         if dialog.result():
             if dialog.user_location_changed:
                 self.move_users(dialog.previous_user_save_location)
+            if dialog.dash_buttons_activated_changed:
+                if dialog.dash_buttons_activated:
+                    self.activate_dash_buttons()
+                else:
+                    self.deactivate_dash_buttons()
 
     def move_users(self, old_directory):
         current_user = self.userBox.currentIndex()
