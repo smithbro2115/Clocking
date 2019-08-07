@@ -150,9 +150,9 @@ def add_to_config(category, option, value):
         config.write(config_file)
 
 
-def try_to_add_section_to_config(config, section):
+def try_to_add_section_to_config(ini_file, section):
     try:
-        config.add_section(section)
+        ini_file.add_section(section)
     except configparser.DuplicateSectionError:
         pass
 
@@ -162,6 +162,23 @@ def read_from_config(category, option):
     config = configparser.ConfigParser()
     config.read(config_path)
     return config.get(category, option)
+
+
+def write_to_cache(category, option, value):
+    cache_path = f"{get_app_data_folder('')}/cache.ini"
+    cache = configparser.ConfigParser()
+    try_to_add_section_to_config(cache, category)
+    cache.read(cache_path)
+    cache.set(category, str(option), str(value))
+    with open(cache_path, 'w') as cache_file:
+        cache.write(cache_file)
+
+
+def read_from_cache(category, option):
+    cache_path = f"{get_app_data_folder('')}/cache.ini"
+    cache = configparser.ConfigParser()
+    cache.read(cache_path)
+    return cache.get(category, option)
 
 
 def does_folder_exist(path):

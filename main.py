@@ -14,7 +14,8 @@ from datetime import timedelta, datetime
 from Preferences import PreferenceDialog
 from configparser import NoSectionError, NoOptionError
 from LocalFileHandling import delete_directory, read_from_config, get_app_data_folder, add_to_config, \
-    add_to_dict_from_csv_file, read_dict_from_csv_file, convert_string_tuple_into_tuple_dict, save_dict_to_csv_file
+    add_to_dict_from_csv_file, read_dict_from_csv_file, convert_string_tuple_into_tuple_dict, save_dict_to_csv_file, \
+    write_to_cache, read_from_cache
 
 
 class Gui(MainWindow.Ui_MainWindow):
@@ -67,6 +68,16 @@ class Gui(MainWindow.Ui_MainWindow):
         self.addUserButton.clicked.connect(self.add_user_button_clicked)
         self.globalRadioButton.clicked.connect(lambda:
                                                self.set_monthly_time_and_income(self.current_clock.total_monthly_time))
+        self.try_to_recall_last_used_settings()
+
+    def try_to_recall_last_used_settings(self):
+        try:
+            user_name = read_from_cache('LAST_USED', 'user')
+            category = read_from_cache('LAST_USED', 'category')
+            self.userBox.setCurrentIndex(self.userBox.findText(user_name))
+            self.categoryBox.setCurrentIndex(self.categoryBox.findText(category))
+        except(NoOptionError, NoSectionError):
+            pass
 
     def activate_dash_buttons(self):
         try:
@@ -479,11 +490,23 @@ def format_date(date: datetime):
     return f"{date.month:02}-{date.day:02}-{date.year}"
 
 
+class MainWindow(QtWidgets.QMainWindow):
+    def __init__(self, gui_ui):
+        super(MainWindow, self).__init__()
+        self.ui = gui_ui
+
+    def closeEvent(self, *args, **kwargs):
+        if self.ui.current_category:
+            write_to_cache('LAST_USED', 'user', f"{self.ui.current_user.first_name} {self.ui.current_user.last_name}")
+            write_to_cache('LAST_USED', 'category', self.ui.current_category.name)
+        super(MainWindow, self).close()
+
+
 if __name__ == '__main__':
     import sys
     app = QtWidgets.QApplication(sys.argv)
     ui = Gui()
-    mainWindow = QtWidgets.QMainWindow()
+    mainWindow = MainWindow(ui)
     ui.setupUi(mainWindow)
     ui.setup_additional(mainWindow)
     mainWindow.show()

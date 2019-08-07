@@ -9,7 +9,6 @@ import os
 from configparser import NoSectionError, NoOptionError
 import sys
 from shutil import copyfile
-import subprocess
 
 
 def disconnect_all_signals(*args):
