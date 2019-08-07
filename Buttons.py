@@ -1,6 +1,7 @@
 from Gui.AddButtonDialog import Ui_Dialog
 from PyQt5.QtCore import pyqtSignal, pyqtSlot, QObject, QRunnable, QThreadPool
 from PyQt5 import QtWidgets
+from Gui.CustomPyQtDialogsAndWidgets import TimedEmitter
 from scapy.all import *
 from utils import error_dialog
 import qdarkstyle
@@ -88,31 +89,6 @@ class AddButtonDialog(QtWidgets.QDialog):
 
 	def activate_label(self, label):
 		label.setStyleSheet("QLabel{color: #287399;}")
-
-
-class TimedEmitterSignals(QObject):
-	time_elapsed = pyqtSignal()
-	finished = pyqtSignal()
-
-
-class TimedEmitter(QRunnable):
-	def __init__(self, time_between_emits, times_to_emit):
-		super(TimedEmitter, self).__init__()
-		self.signals = TimedEmitterSignals()
-		self.time_between = time_between_emits
-		self.times_to_emit = times_to_emit
-		self.times_emitted = 0
-		self.canceled = False
-
-	@pyqtSlot()
-	def run(self):
-		while self.times_emitted < self.times_to_emit:
-			if self.canceled:
-				break
-			time.sleep(self.time_between)
-			self.signals.time_elapsed.emit()
-			self.times_emitted += 1
-		self.signals.finished.emit()
 
 
 class ButtonIdentifierSignals(QObject):

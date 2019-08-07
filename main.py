@@ -7,7 +7,7 @@ import qdarkstyle
 import Categories
 from time import sleep
 from Buttons import AddButtonDialog
-from Gui.CustomPyQtDialogsAndWidgets import AssignButtonDialog
+from Gui.CustomPyQtDialogsAndWidgets import AssignButtonDialog, TimedEmitter
 from Clock import get_new_date_time, DateAndTimeContextMenu, delete_clock
 from Users import add_user, load_users, delete_user, edit_user, move_user
 from datetime import timedelta, datetime
@@ -28,6 +28,8 @@ class Gui(MainWindow.Ui_MainWindow):
         self.buttons_activated = False
         self.buttons_file_path = f"{get_app_data_folder('Buttons')}/Buttons.csv"
         self._global_monthly_time = timedelta()
+        self.update_thread_pool = QtCore.QThreadPool()
+        self.update_thread = TimedEmitter(2, -1)
 
     def setup_additional(self, main_window):
         main_window.setStyleSheet(qdarkstyle.load_stylesheet_pyqt5())
@@ -69,6 +71,11 @@ class Gui(MainWindow.Ui_MainWindow):
         self.globalRadioButton.clicked.connect(lambda:
                                                self.set_monthly_time_and_income(self.current_clock.total_monthly_time))
         self.try_to_recall_last_used_settings()
+        self.update_thread.signals.time_elapsed.connect(self.update_table)
+        self.update_thread_pool.start(self.update_thread)
+
+    def __del__(self):
+        self.update_thread.canceled = True
 
     def try_to_recall_last_used_settings(self):
         try:
@@ -332,9 +339,12 @@ class Gui(MainWindow.Ui_MainWindow):
         self.current_category = self.categoryBox.currentData()
 
     def update_table(self):
-        original_state = self.current_clock.state
-        self.load_clock()
-        return original_state != self.current_clock.state
+        try:
+            original_state = self.current_clock.state
+            self.load_clock()
+            return original_state != self.current_clock.state
+        except AttributeError:
+            pass
 
     def load_clock(self):
         self.current_clock = self.current_category.clock
