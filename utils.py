@@ -8,6 +8,8 @@ import qdarkstyle
 import os
 from configparser import NoSectionError, NoOptionError
 import sys
+from shutil import copyfile
+import subprocess
 
 
 def disconnect_all_signals(*args):
@@ -120,10 +122,10 @@ def make_dir(directory):
     return directory
 
 
-def move_file(path, new_path):
-    new_path = f"{new_path}/{path}".replace('\\', '/')
+def copy_file_to_directory(path, new_path):
+    new_path = f"{new_path}/{os.path.basename(path)}".replace('\\', '/')
     path = path.replace('\\', '/')
-    os.rename(path, new_path)
+    copyfile(path, new_path)
     return new_path
 
 
@@ -132,11 +134,11 @@ def delete_file(path):
 
 
 def start_program(path):
-    os.system(path)
+    os.startfile(path)
 
 
 def close_program(name):
-    os.system(f"TASKKILL /F /IM {name}")
+    os.system(f'TASKKILL /F /IM "{name}"')
 
 
 def resource_path(relative_path):

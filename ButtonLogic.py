@@ -6,7 +6,6 @@ from Buttons import sniff_for_arps, arp_monitor_callback
 import time
 from plyer import notification
 from main import format_duration_from_seconds, format_time
-import traceback
 from utils import resource_path
 
 
@@ -29,6 +28,9 @@ class ButtonListener:
 				self.send_notification(category.clock.state, clock_time)
 		except AttributeError:
 			pass
+		except TypeError:
+			self.notify('Error with Clocking', "That Category may no longer exist, or you may be "
+											   "disconnected from your drive")
 
 	def get_assigned_category(self, address) -> Category:
 		button_assignments = self.get_button_assignments()
@@ -66,10 +68,4 @@ def find_category_from_key_value(categories, key, value):
 			continue
 
 
-try:
-	button_listener = ButtonListener()
-except Exception:
-	traceback.print_exc()
-
-while True:
-	time.sleep(2)
+button_listener = ButtonListener()

@@ -19,7 +19,7 @@ class PreferenceDialog(QtWidgets.QDialog):
         self.previous_user_save_location = read_from_config('USERS', 'USER_SAVE_LOCATION')
         try:
             self.reset_clocks_after_export = bool(int(read_from_config('EXPORTING', 'reset_clocks_after_export')))
-            self.ui.resetClocksAfterExportingInvoicesRadioButton.setChecked(self.reset_clocks_after_export)
+            self.ui.resetClocksAfterExportingInvoicesCheckBox.setChecked(self.reset_clocks_after_export)
         except (NoSectionError, NoOptionError):
             self.reset_clocks_after_export = None
         try:
@@ -27,13 +27,14 @@ class PreferenceDialog(QtWidgets.QDialog):
         except KeyError:
             pass
         self.ui.userSaveLocationLineEdit.textChanged.connect(self.user_loc_changed)
-        self.ui.resetClocksAfterExportingInvoicesRadioButton.clicked.connect(self.reset_clocks_export_changed)
-        self.ui.amazonButtonsRadioButton.clicked.connect(self.dash_buttons_activated_changed_clicked)
+        self.ui.resetClocksAfterExportingInvoicesCheckBox.clicked.connect(self.reset_clocks_export_changed)
+        self.ui.amazonButtonsCheckBox.clicked.connect(self.dash_buttons_activated_changed_clicked)
+        self.setup_dash_button_prefs()
 
     def setup_dash_button_prefs(self):
         try:
             self.dash_buttons_activated = bool(int(read_from_config('BUTTONS', 'activated')))
-            self.ui.amazonButtonsRadioButton.setChecked(self.dash_buttons_activated)
+            self.ui.amazonButtonsCheckBox.setChecked(self.dash_buttons_activated)
         except (NoSectionError, NoOptionError):
             self.dash_buttons_activated = None
 
@@ -44,7 +45,7 @@ class PreferenceDialog(QtWidgets.QDialog):
         self.reset_clocks_after_export_changed = True
 
     def dash_buttons_activated_changed_clicked(self):
-        self.dash_buttons_activated = self.ui.amazonButtonsRadioButton.isChecked()
+        self.dash_buttons_activated = self.ui.amazonButtonsCheckBox.isChecked()
         self.dash_buttons_activated_changed = True
 
     def browse_for_folder(self):
@@ -58,9 +59,9 @@ class PreferenceDialog(QtWidgets.QDialog):
             add_to_config('USERS', 'USER_SAVE_LOCATION', self.ui.userSaveLocationLineEdit.text())
         if self.reset_clocks_after_export_changed:
             add_to_config('EXPORTING', 'reset_clocks_after_export',
-                          int(self.ui.resetClocksAfterExportingInvoicesRadioButton.isChecked()))
+                          int(self.ui.resetClocksAfterExportingInvoicesCheckBox.isChecked()))
         if self.dash_buttons_activated_changed:
-            add_to_config('BUTTONS', 'activated', int(self.ui.amazonButtonsRadioButton.isChecked()))
+            add_to_config('BUTTONS', 'activated', int(self.ui.amazonButtonsCheckBox.isChecked()))
         super(PreferenceDialog, self).accept()
 
 

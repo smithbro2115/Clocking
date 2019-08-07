@@ -14,16 +14,6 @@
    <string>Preferences</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="1" column="0" colspan="2">
-    <widget class="QRadioButton" name="resetClocksAfterExportingInvoicesRadioButton">
-     <property name="layoutDirection">
-      <enum>Qt::LeftToRight</enum>
-     </property>
-     <property name="text">
-      <string>Reset Clocks After Exporting Invoice</string>
-     </property>
-    </widget>
-   </item>
    <item row="0" column="0">
     <widget class="QLabel" name="label">
      <property name="text">
@@ -38,13 +28,6 @@
      </property>
      <property name="standardButtons">
       <set>QDialogButtonBox::Cancel|QDialogButtonBox::Save</set>
-     </property>
-    </widget>
-   </item>
-   <item row="1" column="2">
-    <widget class="QRadioButton" name="amazonButtonsRadioButton">
-     <property name="text">
-      <string>Allow Amazon Buttons To Clock In</string>
      </property>
     </widget>
    </item>
@@ -89,6 +72,23 @@
        </widget>
       </item>
      </layout>
+    </widget>
+   </item>
+   <item row="1" column="0" colspan="2">
+    <widget class="QCheckBox" name="resetClocksAfterExportingInvoicesCheckBox">
+     <property name="layoutDirection">
+      <enum>Qt::LeftToRight</enum>
+     </property>
+     <property name="text">
+      <string>Reset Clocks After Exporting Invoice</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="2">
+    <widget class="QCheckBox" name="amazonButtonsCheckBox">
+     <property name="text">
+      <string>Allow Amazon Buttons To Clock In</string>
+     </property>
     </widget>
    </item>
   </layout>

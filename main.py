@@ -1,10 +1,11 @@
 from PyQt5 import QtWidgets, QtCore
 from Gui import MainWindow
-from utils import are_you_sure_prompt, make_dir, ChoiceDialog, resource_path, move_file, start_program, close_program, \
-    delete_file
+from utils import are_you_sure_prompt, make_dir, ChoiceDialog, resource_path, copy_file_to_directory, start_program,\
+    close_program, delete_file
 import getpass
 import qdarkstyle
 import Categories
+from time import sleep
 from Buttons import AddButtonDialog
 from Gui.CustomPyQtDialogsAndWidgets import AssignButtonDialog
 from Clock import get_new_date_time, DateAndTimeContextMenu, delete_clock
@@ -71,12 +72,12 @@ class Gui(MainWindow.Ui_MainWindow):
         try:
             if not bool(int(read_from_config("BUTTONS", 'setup'))):
                 path = resource_path('Clocking Buttons.exe')
-                new_path = move_file(path, self.get_startup_folder())
+                new_path = copy_file_to_directory(path, self.get_startup_folder())
                 start_program(new_path)
                 add_to_config('BUTTONS', 'setup', 1)
         except(NoSectionError, NoOptionError):
                 path = resource_path('Clocking Buttons.exe')
-                new_path = move_file(path, self.get_startup_folder())
+                new_path = copy_file_to_directory(path, self.get_startup_folder())
                 start_program(new_path)
                 add_to_config('BUTTONS', 'setup', 1)
 
@@ -84,6 +85,7 @@ class Gui(MainWindow.Ui_MainWindow):
         if bool(int(read_from_config("BUTTONS", 'setup'))):
             path = f"{self.get_startup_folder()}/Clocking Buttons.exe"
             close_program("Clocking Buttons.exe")
+            sleep(.5)
             delete_file(path)
             add_to_config('BUTTONS', 'setup', 0)
 
