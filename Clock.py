@@ -155,8 +155,11 @@ class DateAndTimeContextMenu(QMenu):
     def __init__(self, point, item, edit_function, delete_function, parent=None):
         super(DateAndTimeContextMenu, self).__init__(parent)
         self.item = item
+        self.column = item.column()
+        self.row = item.row()
+        self.data = item.data(Qt.UserRole)
         self.edit_action = QAction("Edit")
-        self.edit_action.triggered.connect(lambda: edit_function(self.item))
+        self.edit_action.triggered.connect(lambda: edit_function(self.row, self.column, self.data))
         self.addAction(self.edit_action)
         self.delete_function = QAction("Delete")
         self.delete_function.triggered.connect(lambda: delete_function(self.item.row()))
@@ -170,9 +173,9 @@ def delete_clock(clock):
     delete_file(clock.file_path)
 
 
-def get_new_date_time(parent):
-    if isinstance(parent.data(Qt.UserRole), datetime):
-        old_time = parent.data(Qt.UserRole)
+def get_new_date_time(data):
+    if isinstance(data, datetime):
+        old_time = data
         dialog = DateAndTimeEditDialog(old_time)
         new_time = dialog.get_edited_time()
         if dialog.result():

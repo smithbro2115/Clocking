@@ -48,6 +48,7 @@ class Gui(MainWindow.Ui_MainWindow):
         self.actionDelete_User.triggered.connect(self.delete_user_clicked)
         self.clockTableWidget.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.clockTableWidget.customContextMenuRequested.connect(self.table_right_clicked)
+        self.clockTableWidget.setStyleSheet("""QTableWidget::item:hover { background: transparent; }""")
         self.actionEdit_User.triggered.connect(self.edit_user_clicked)
         self.clockTableWidget.itemDoubleClicked.connect(self.clock_table_edit_triggered)
         self.actionClock.triggered.connect(self.clock_button_clicked)
@@ -207,11 +208,10 @@ class Gui(MainWindow.Ui_MainWindow):
         if value:
             self.load_clock()
 
-    def clock_table_edit_triggered(self, item):
-        row_number = item.row()
-        new_date_time = get_new_date_time(item)
+    def clock_table_edit_triggered(self, row_number, column, data):
+        new_date_time = get_new_date_time(data)
         if isinstance(new_date_time, datetime):
-            row = self.current_clock.edit_clock_time(row_number, item.column(), new_date_time)
+            row = self.current_clock.edit_clock_time(row_number, column, new_date_time)
             if row:
                 for index, item in enumerate(row):
                     self.set_next_item(row_number, index, item)
@@ -341,10 +341,21 @@ class Gui(MainWindow.Ui_MainWindow):
     def update_table(self):
         try:
             original_state = self.current_clock.state
+            data = self.get_table_positional_data()
             self.load_clock()
+            self.set_table_positional_data(data)
             return original_state != self.current_clock.state
         except AttributeError:
             pass
+
+    def get_table_positional_data(self):
+        current_index = self.clockTableWidget.currentIndex()
+        current_scroll = self.clockTableWidget.verticalScrollBar().sliderPosition()
+        return current_index, current_scroll
+
+    def set_table_positional_data(self, data):
+        self.clockTableWidget.setCurrentIndex(data[0])
+        self.clockTableWidget.verticalScrollBar().setSliderPosition(data[1])
 
     def load_clock(self):
         self.current_clock = self.current_category.clock
