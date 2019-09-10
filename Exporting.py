@@ -1,13 +1,15 @@
 import openpyxl
 from openpyxl import styles
-from LocalFileHandling import get_app_data_folder, make_folder_if_it_does_not_exist
+from LocalFileHandling import make_folder_if_it_does_not_exist
 from datetime import datetime
 from Company import Company
+from utils import resource_path
 from PyQt5 import QtWidgets
 import os
 
 
-invoice_template_path = f"{get_app_data_folder('')}/Invoice.xlsx"
+invoice_template_path = resource_path("Invoice.xlsx")
+print(invoice_template_path)
 align = styles.Alignment(horizontal='left')
 font = styles.Font(size=12)
 default_company = Company(name='Brinkman Adventures', address='13939 N. Cedarburg Rd. Mequon, WI 53097',
@@ -66,7 +68,7 @@ def add_category_to_invoice(category, df):
         if not df.cell(row=i, column=1).value:
             date = datetime.now()
             df.cell(row=i, column=1).value = date.date()
-            df.cell(row=i, column=2).value = round(float(category.clock.total_monthly_time.seconds)/3600, 4)
+            df.cell(row=i, column=2).value = round(float(category.clock.total_monthly_time.total_seconds())/3600, 4)
             df.cell(row=i, column=3).value = category.category_number
             df.cell(row=i, column=4).value = category.description
             df.cell(row=i, column=8).value = category.wage

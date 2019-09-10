@@ -114,10 +114,18 @@ class Clock:
         try:
             if rows[-1][1] == "0:00:00":
                 self.state = True
-                self.current_time = datetime.strptime(rows[-1][0], '%Y-%m-%d %H:%M:%S.%f')
+                self.set_current_time_to_cell(rows[-1][0])
                 return True
+            self.state = False
         except IndexError:
+            self.state = False
             return False
+
+    def set_current_time_to_cell(self, cell):
+        try:
+            self.current_time = datetime.strptime(cell, '%Y-%m-%d %H:%M:%S.%f')
+        except TypeError:
+            self.current_time = cell
 
 
 def format_time_from_seconds(seconds):
@@ -147,8 +155,11 @@ class DateAndTimeContextMenu(QMenu):
     def __init__(self, point, item, edit_function, delete_function, parent=None):
         super(DateAndTimeContextMenu, self).__init__(parent)
         self.item = item
+        self.column = item.column()
+        self.row = item.row()
+        self.data = item.data(Qt.UserRole)
         self.edit_action = QAction("Edit")
-        self.edit_action.triggered.connect(lambda: edit_function(self.item))
+        self.edit_action.triggered.connect(lambda: edit_function(self.row, self.column, self.data))
         self.addAction(self.edit_action)
         self.delete_function = QAction("Delete")
         self.delete_function.triggered.connect(lambda: delete_function(self.item.row()))
@@ -162,9 +173,9 @@ def delete_clock(clock):
     delete_file(clock.file_path)
 
 
-def get_new_date_time(parent):
-    if isinstance(parent.data(Qt.UserRole), datetime):
-        old_time = parent.data(Qt.UserRole)
+def get_new_date_time(data):
+    if isinstance(data, datetime):
+        old_time = data
         dialog = DateAndTimeEditDialog(old_time)
         new_time = dialog.get_edited_time()
         if dialog.result():

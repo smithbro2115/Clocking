@@ -1,15 +1,21 @@
-from PyQt5 import QtGui, QtWidgets, QtCore
+from PyQt5 import QtWidgets, QtCore
 from Gui import MainWindow
-from utils import are_you_sure_prompt, make_dir
+from utils import are_you_sure_prompt, make_dir, ChoiceDialog, resource_path, copy_file_to_directory, start_program,\
+    close_program, delete_file
+import getpass
 import qdarkstyle
 import Categories
-from Clock import get_new_date_time, DateAndTimeContextMenu
+from time import sleep
+from Buttons import AddButtonDialog
+from Gui.CustomPyQtDialogsAndWidgets import AssignButtonDialog, TimedEmitter
+from Clock import get_new_date_time, DateAndTimeContextMenu, delete_clock
 from Users import add_user, load_users, delete_user, edit_user, move_user
 from datetime import timedelta, datetime
-from Exporting import make_invoice_excel, GetFileLocationDialog, get_file_invoice_name, get_invoice_folder_name
 from Preferences import PreferenceDialog
-from configparser import NoSectionError
-from LocalFileHandling import delete_directory, read_from_config, get_app_data_folder, add_to_config
+from configparser import NoSectionError, NoOptionError
+from LocalFileHandling import delete_directory, read_from_config, get_app_data_folder, add_to_config, \
+    add_to_dict_from_csv_file, read_dict_from_csv_file, convert_string_tuple_into_tuple_dict, save_dict_to_csv_file, \
+    write_to_cache, read_from_cache
 
 
 class Gui(MainWindow.Ui_MainWindow):
@@ -19,7 +25,11 @@ class Gui(MainWindow.Ui_MainWindow):
         self._current_user = None
         self._current_category = None
         self.current_clock = None
+        self.buttons_activated = False
+        self.buttons_file_path = f"{get_app_data_folder('Buttons')}/Buttons.csv"
         self._global_monthly_time = timedelta()
+        self.update_thread_pool = QtCore.QThreadPool()
+        self.update_thread = TimedEmitter(2, -1)
 
     def setup_additional(self, main_window):
         main_window.setStyleSheet(qdarkstyle.load_stylesheet_pyqt5())
@@ -38,12 +48,15 @@ class Gui(MainWindow.Ui_MainWindow):
         self.actionDelete_User.triggered.connect(self.delete_user_clicked)
         self.clockTableWidget.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.clockTableWidget.customContextMenuRequested.connect(self.table_right_clicked)
+        self.clockTableWidget.setStyleSheet("""QTableWidget::item:hover { background: transparent; }""")
         self.actionEdit_User.triggered.connect(self.edit_user_clicked)
-        self.clockTableWidget.itemDoubleClicked.connect(self.clock_table_edit_triggered)
+        self.clockTableWidget.itemDoubleClicked.connect(self.clock_table_select_clicked)
         self.actionClock.triggered.connect(self.clock_button_clicked)
-        self.actionExport_Invoice.triggered.connect(lambda: self.export_invoice(self.current_user, self.categories))
+        self.actionExport_Invoice.triggered.connect(lambda: self.export_invoice_triggered(self.current_user, self.categories))
         self.actionExport_All_Invoices.triggered.connect(self.export_all_invoices)
         self.actionPreferences.triggered.connect(self.preferences_clicked)
+        self.actionAdd_Button.triggered.connect(self.add_button_action_triggered)
+        self.actionAssign_Buttons.triggered.connect(self.assign_buttons_action_triggered)
         self.load_users()
         self.load_config()
         if self.userBox.currentIndex() < 0:
@@ -58,6 +71,58 @@ class Gui(MainWindow.Ui_MainWindow):
         self.addUserButton.clicked.connect(self.add_user_button_clicked)
         self.globalRadioButton.clicked.connect(lambda:
                                                self.set_monthly_time_and_income(self.current_clock.total_monthly_time))
+        self.try_to_recall_last_used_settings()
+        self.update_thread.signals.time_elapsed.connect(self.update_table)
+        self.update_thread_pool.start(self.update_thread)
+
+    def __del__(self):
+        self.update_thread.canceled = True
+
+    def try_to_recall_last_used_settings(self):
+        try:
+            user_name = read_from_cache('LAST_USED', 'user')
+            category = read_from_cache('LAST_USED', 'category')
+            self.userBox.setCurrentIndex(self.userBox.findText(user_name))
+            self.categoryBox.setCurrentIndex(self.categoryBox.findText(category))
+        except(NoOptionError, NoSectionError):
+            pass
+
+    def activate_dash_buttons(self):
+        try:
+            if not bool(int(read_from_config("BUTTONS", 'setup'))):
+                path = resource_path('Clocking Buttons.exe')
+                new_path = copy_file_to_directory(path, self.get_startup_folder())
+                start_program(new_path)
+                add_to_config('BUTTONS', 'setup', 1)
+        except(NoSectionError, NoOptionError):
+                path = resource_path('Clocking Buttons.exe')
+                new_path = copy_file_to_directory(path, self.get_startup_folder())
+                start_program(new_path)
+                add_to_config('BUTTONS', 'setup', 1)
+
+    def deactivate_dash_buttons(self):
+        if bool(int(read_from_config("BUTTONS", 'setup'))):
+            path = f"{self.get_startup_folder()}/Clocking Buttons.exe"
+            close_program("Clocking Buttons.exe")
+            sleep(.5)
+            delete_file(path)
+            add_to_config('BUTTONS', 'setup', 0)
+
+    def get_startup_folder(self):
+        USER_NAME = getpass.getuser()
+        return r'C:\Users\%s\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup' % USER_NAME
+
+    def add_button_action_triggered(self):
+        dialog = AddButtonDialog()
+        if dialog.result():
+            add_to_dict_from_csv_file(self.buttons_file_path, {dialog.address: (None, None)})
+
+    def assign_buttons_action_triggered(self):
+        buttons = convert_string_tuple_into_tuple_dict(read_dict_from_csv_file(self.buttons_file_path))
+        dialog = AssignButtonDialog(buttons, self.users)
+        dialog.exec_()
+        if dialog.result():
+            save_dict_to_csv_file(self.buttons_file_path, dialog.new_button_dict)
 
     def table_right_clicked(self, point):
         item = self.clockTableWidget.itemAt(point)
@@ -65,17 +130,30 @@ class Gui(MainWindow.Ui_MainWindow):
             DateAndTimeContextMenu(self.clockTableWidget.mapToGlobal(point), item,
                                    self.clock_table_edit_triggered, self.clock_table_delete_triggered)
 
-    def export_invoice(self, user, categories):
+    def export_invoice_triggered(self, user, categories):
+        from Exporting import make_invoice_excel, GetFileLocationDialog, get_file_invoice_name
         if self.current_category:
-            dialog = GetFileLocationDialog(get_file_invoice_name(user))
-            result = dialog.get_save_path()
+            file_location_dialog = GetFileLocationDialog(get_file_invoice_name(user))
+            result = file_location_dialog.get_save_path()
             if result:
-                make_invoice_excel(user, categories, path=result)
+                delete_clocks_dialog = ChoiceDialog('Do you want to reset all the clocks for this user?', 'EXPORTING',
+                                                    'reset_clocks_after_export')
+                if delete_clocks_dialog.result():
+                    make_invoice_excel(user, categories, path=result)
+                    self.handle_delete_clocks(user, delete_clocks_dialog.yes_or_no)
+
+    def handle_delete_clocks(self, user, result):
+        if result:
+            if user == self.current_user:
+                self.reset_current_clocks()
+            else:
+                self.delete_all_users_clocks(user)
 
     def export_all_invoices(self):
         self.export_invoices(self.users)
 
     def export_invoices(self, users):
+        from Exporting import make_invoice_excel, GetFileLocationDialog, get_file_invoice_name, get_invoice_folder_name
         folder_name = get_invoice_folder_name()
         dialog = GetFileLocationDialog(folder_name)
         path = dialog.get_save_path()
@@ -130,11 +208,13 @@ class Gui(MainWindow.Ui_MainWindow):
         if value:
             self.load_clock()
 
-    def clock_table_edit_triggered(self, item):
-        row_number = item.row()
-        new_date_time = get_new_date_time(item)
+    def clock_table_select_clicked(self, item):
+        self.clock_table_edit_triggered(item.row(), item.column(), item.data(QtCore.Qt.UserRole))
+
+    def clock_table_edit_triggered(self, row_number, column, data):
+        new_date_time = get_new_date_time(data)
         if isinstance(new_date_time, datetime):
-            row = self.current_clock.edit_clock_time(row_number, item.column(), new_date_time)
+            row = self.current_clock.edit_clock_time(row_number, column, new_date_time)
             if row:
                 for index, item in enumerate(row):
                     self.set_next_item(row_number, index, item)
@@ -152,6 +232,11 @@ class Gui(MainWindow.Ui_MainWindow):
         if dialog.result():
             if dialog.user_location_changed:
                 self.move_users(dialog.previous_user_save_location)
+            if dialog.dash_buttons_activated_changed:
+                if dialog.dash_buttons_activated:
+                    self.activate_dash_buttons()
+                else:
+                    self.deactivate_dash_buttons()
 
     def move_users(self, old_directory):
         current_user = self.userBox.currentIndex()
@@ -256,12 +341,32 @@ class Gui(MainWindow.Ui_MainWindow):
     def category_box_changed(self):
         self.current_category = self.categoryBox.currentData()
 
+    def update_table(self):
+        try:
+            original_state = self.current_clock.state
+            data = self.get_table_positional_data()
+            self.load_clock()
+            self.set_table_positional_data(data)
+            return original_state != self.current_clock.state
+        except AttributeError:
+            pass
+
+    def get_table_positional_data(self):
+        current_index = self.clockTableWidget.currentIndex()
+        current_scroll = self.clockTableWidget.verticalScrollBar().sliderPosition()
+        return current_index, current_scroll
+
+    def set_table_positional_data(self, data):
+        self.clockTableWidget.setCurrentIndex(data[0])
+        self.clockTableWidget.verticalScrollBar().setSliderPosition(data[1])
+
     def load_clock(self):
         self.current_clock = self.current_category.clock
         self.current_clock.active = False
         self.clockTableWidget.setRowCount(0)
         self.current_clock.active = True
         rows = self.current_clock.load()
+        self.current_clock.check_if_clocked_in(rows)
         self.load_clock_data_into_table(rows)
         self.set_monthly_time_and_income(self.current_clock.total_monthly_time)
         self.set_button_text(self.current_clock.state)
@@ -274,13 +379,22 @@ class Gui(MainWindow.Ui_MainWindow):
 
     def clock_button_clicked(self):
         if self.current_category:
-            time = self.current_clock.clock()
-            self.set_button_text(self.current_clock.state)
-            self.set_monthly_time_and_income(self.current_clock.total_monthly_time)
-            if self.current_clock.state:
-                self.clock_in_table(time)
+            if self.update_table():
+                result = are_you_sure_prompt("This clock has already been modified somewhere else, "
+                                             "are you sure you want to do this?")
+                if result:
+                    self.clock()
             else:
-                self.clock_out_table(time[0], time[1])
+                self.clock()
+
+    def clock(self):
+        time = self.current_clock.clock()
+        self.set_button_text(self.current_clock.state)
+        self.set_monthly_time_and_income(self.current_clock.total_monthly_time)
+        if self.current_clock.state:
+            self.clock_in_table(time)
+        else:
+            self.clock_out_table(time[0], time[1])
 
     def set_button_text(self, state):
         if state:
@@ -361,6 +475,21 @@ class Gui(MainWindow.Ui_MainWindow):
         self.set_next_item(self.clockTableWidget.rowCount() - 1, 1, time)
         self.set_next_item(self.clockTableWidget.rowCount() - 1, 2, total_time)
 
+    def delete_all_users_clocks(self, user):
+        categories = Categories.load_categories(user)
+        for clock in [category.clock for category in categories]:
+            delete_clock(clock)
+
+    def reset_current_clocks(self):
+        self.delete_all_users_clocks(self.current_user)
+        current_user_index = self.userBox.currentIndex()
+        current_category_index = self.categoryBox.currentIndex()
+        self.userBox.clear()
+        self.load_users()
+        self.userBox.setCurrentIndex(current_user_index)
+        self.reset_category()
+        self.categoryBox.setCurrentIndex(current_category_index)
+
 
 def format_duration_from_seconds(seconds):
     hours = seconds // 3600
@@ -385,11 +514,23 @@ def format_date(date: datetime):
     return f"{date.month:02}-{date.day:02}-{date.year}"
 
 
+class MainWindow(QtWidgets.QMainWindow):
+    def __init__(self, gui_ui):
+        super(MainWindow, self).__init__()
+        self.ui = gui_ui
+
+    def closeEvent(self, *args, **kwargs):
+        if self.ui.current_category:
+            write_to_cache('LAST_USED', 'user', f"{self.ui.current_user.first_name} {self.ui.current_user.last_name}")
+            write_to_cache('LAST_USED', 'category', self.ui.current_category.name)
+        super(MainWindow, self).close()
+
+
 if __name__ == '__main__':
     import sys
     app = QtWidgets.QApplication(sys.argv)
     ui = Gui()
-    mainWindow = QtWidgets.QMainWindow()
+    mainWindow = MainWindow(ui)
     ui.setupUi(mainWindow)
     ui.setup_additional(mainWindow)
     mainWindow.show()
