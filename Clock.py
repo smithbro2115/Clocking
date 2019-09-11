@@ -162,7 +162,7 @@ class DateAndTimeContextMenu(QMenu):
         self.edit_action.triggered.connect(lambda: edit_function(self.row, self.column, self.data))
         self.addAction(self.edit_action)
         self.delete_function = QAction("Delete")
-        self.delete_function.triggered.connect(lambda: delete_function(self.item.row()))
+        self.delete_function.triggered.connect(lambda: delete_function(self.row))
         self.addAction(self.delete_function)
         self.setStyleSheet(qdarkstyle.load_stylesheet_pyqt5())
         point.setY(point.y()+38)
