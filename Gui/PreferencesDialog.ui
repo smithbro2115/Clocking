@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>435</width>
-    <height>95</height>
+    <width>470</width>
+    <height>96</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -81,13 +81,6 @@
      </property>
      <property name="text">
       <string>Reset Clocks After Exporting Invoice</string>
-     </property>
-    </widget>
-   </item>
-   <item row="1" column="2">
-    <widget class="QCheckBox" name="amazonButtonsCheckBox">
-     <property name="text">
-      <string>Allow Amazon Buttons To Clock In</string>
      </property>
     </widget>
    </item>

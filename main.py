@@ -1,7 +1,7 @@
+import qdarkstyle
 from PyQt5 import QtWidgets, QtCore
 from Gui import MainWindow
 from utils import are_you_sure_prompt, make_dir, ChoiceDialog
-import qdarkstyle
 import Categories
 from Gui.CustomPyQtDialogsAndWidgets import TimedEmitter
 from Clock import get_new_date_time, DateAndTimeContextMenu, delete_clock
