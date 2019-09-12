@@ -60,8 +60,7 @@ class Gui(MainWindow.Ui_MainWindow):
         self.userBox.currentIndexChanged.connect(self.user_box_changed)
         self.categoryBox.currentIndexChanged.connect(self.category_box_changed)
         self.addUserButton.clicked.connect(self.add_user_button_clicked)
-        self.globalRadioButton.clicked.connect(lambda:
-                                               self.set_monthly_time_and_income(self.current_clock.total_monthly_time))
+        self.globalRadioButton.clicked.connect(self.global_clicked)
         self.try_to_recall_last_used_settings()
         self.update_thread.signals.time_elapsed.connect(self.update_table)
         self.update_thread_pool.start(self.update_thread)
@@ -102,6 +101,12 @@ class Gui(MainWindow.Ui_MainWindow):
                 self.reset_current_clocks()
             else:
                 self.delete_all_users_clocks(user)
+
+    def global_clicked(self):
+        try:
+            self.set_monthly_time_and_income(self.current_clock.total_monthly_time)
+        except AttributeError:
+            self.set_monthly_time_and_income(timedelta())
 
     def export_all_invoices(self):
         self.export_invoices(self.users)
@@ -277,7 +282,14 @@ class Gui(MainWindow.Ui_MainWindow):
         for category in self.categories:
             self.categoryBox.addItem(category.name, category)
 
+    def reset_clock_values(self):
+        self.current_category = None
+        self.current_clock = None
+        self.categories = []
+        self.try_to_set_monthly_time_and_income()
+
     def user_box_changed(self):
+        self.reset_clock_values()
         if self.userBox.currentIndex() < 0:
             enabled = False
             self.current_user = None
@@ -350,6 +362,12 @@ class Gui(MainWindow.Ui_MainWindow):
             self.clockButton.setText('Clock Out')
         else:
             self.clockButton.setText('Clock In')
+
+    def try_to_set_monthly_time_and_income(self):
+        try:
+            self.set_monthly_time_and_income(self.current_clock.total_monthly_time)
+        except AttributeError:
+            self.set_monthly_time_and_income(timedelta())
 
     def set_monthly_time_and_income(self, total):
         if self.globalRadioButton.isChecked():
