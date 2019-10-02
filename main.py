@@ -1,15 +1,20 @@
-import qdarkstyle
 from PyQt5 import QtWidgets, QtCore
 from Gui import MainWindow
-from utils import are_you_sure_prompt, make_dir, ChoiceDialog
+from utils import are_you_sure_prompt, make_dir, ChoiceDialog, resource_path, copy_file_to_directory, start_program,\
+    close_program, delete_file
+import getpass
+import qdarkstyle
 import Categories
-from Gui.CustomPyQtDialogsAndWidgets import TimedEmitter
+from time import sleep
+from Buttons import AddButtonDialog
+from Gui.CustomPyQtDialogsAndWidgets import AssignButtonDialog, TimedEmitter
 from Clock import get_new_date_time, DateAndTimeContextMenu, delete_clock
 from Users import add_user, load_users, delete_user, edit_user, move_user
 from datetime import timedelta, datetime
 from Preferences import PreferenceDialog
 from configparser import NoSectionError, NoOptionError
 from LocalFileHandling import delete_directory, read_from_config, get_app_data_folder, add_to_config, \
+    add_to_dict_from_csv_file, read_dict_from_csv_file, convert_string_tuple_into_tuple_dict, save_dict_to_csv_file, \
     write_to_cache, read_from_cache
 
 
@@ -20,6 +25,8 @@ class Gui(MainWindow.Ui_MainWindow):
         self._current_user = None
         self._current_category = None
         self.current_clock = None
+        self.buttons_activated = False
+        self.buttons_file_path = f"{get_app_data_folder('Buttons')}/Buttons.csv"
         self._global_monthly_time = timedelta()
         self.update_thread_pool = QtCore.QThreadPool()
         self.update_thread = TimedEmitter(2, -1)
@@ -43,11 +50,13 @@ class Gui(MainWindow.Ui_MainWindow):
         self.clockTableWidget.customContextMenuRequested.connect(self.table_right_clicked)
         self.clockTableWidget.setStyleSheet("""QTableWidget::item:hover { background: transparent; }""")
         self.actionEdit_User.triggered.connect(self.edit_user_clicked)
-        self.clockTableWidget.itemDoubleClicked.connect(self.clock_table_edit_triggered)
+        self.clockTableWidget.itemDoubleClicked.connect(self.clock_table_select_clicked)
         self.actionClock.triggered.connect(self.clock_button_clicked)
         self.actionExport_Invoice.triggered.connect(lambda: self.export_invoice_triggered(self.current_user, self.categories))
         self.actionExport_All_Invoices.triggered.connect(self.export_all_invoices)
         self.actionPreferences.triggered.connect(self.preferences_clicked)
+        self.actionAdd_Button.triggered.connect(self.add_button_action_triggered)
+        self.actionAssign_Buttons.triggered.connect(self.assign_buttons_action_triggered)
         self.load_users()
         self.load_config()
         if self.userBox.currentIndex() < 0:
@@ -60,7 +69,8 @@ class Gui(MainWindow.Ui_MainWindow):
         self.userBox.currentIndexChanged.connect(self.user_box_changed)
         self.categoryBox.currentIndexChanged.connect(self.category_box_changed)
         self.addUserButton.clicked.connect(self.add_user_button_clicked)
-        self.globalRadioButton.clicked.connect(self.global_clicked)
+        self.globalRadioButton.clicked.connect(lambda:
+                                               self.set_monthly_time_and_income(self.current_clock.total_monthly_time))
         self.try_to_recall_last_used_settings()
         self.update_thread.signals.time_elapsed.connect(self.update_table)
         self.update_thread_pool.start(self.update_thread)
@@ -76,6 +86,43 @@ class Gui(MainWindow.Ui_MainWindow):
             self.categoryBox.setCurrentIndex(self.categoryBox.findText(category))
         except(NoOptionError, NoSectionError):
             pass
+
+    def activate_dash_buttons(self):
+        try:
+            if not bool(int(read_from_config("BUTTONS", 'setup'))):
+                path = resource_path('Clocking Buttons.exe')
+                new_path = copy_file_to_directory(path, self.get_startup_folder())
+                start_program(new_path)
+                add_to_config('BUTTONS', 'setup', 1)
+        except(NoSectionError, NoOptionError):
+                path = resource_path('Clocking Buttons.exe')
+                new_path = copy_file_to_directory(path, self.get_startup_folder())
+                start_program(new_path)
+                add_to_config('BUTTONS', 'setup', 1)
+
+    def deactivate_dash_buttons(self):
+        if bool(int(read_from_config("BUTTONS", 'setup'))):
+            path = f"{self.get_startup_folder()}/Clocking Buttons.exe"
+            close_program("Clocking Buttons.exe")
+            sleep(.5)
+            delete_file(path)
+            add_to_config('BUTTONS', 'setup', 0)
+
+    def get_startup_folder(self):
+        USER_NAME = getpass.getuser()
+        return r'C:\Users\%s\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup' % USER_NAME
+
+    def add_button_action_triggered(self):
+        dialog = AddButtonDialog()
+        if dialog.result():
+            add_to_dict_from_csv_file(self.buttons_file_path, {dialog.address: (None, None)})
+
+    def assign_buttons_action_triggered(self):
+        buttons = convert_string_tuple_into_tuple_dict(read_dict_from_csv_file(self.buttons_file_path))
+        dialog = AssignButtonDialog(buttons, self.users)
+        dialog.exec_()
+        if dialog.result():
+            save_dict_to_csv_file(self.buttons_file_path, dialog.new_button_dict)
 
     def table_right_clicked(self, point):
         item = self.clockTableWidget.itemAt(point)
@@ -101,12 +148,6 @@ class Gui(MainWindow.Ui_MainWindow):
                 self.reset_current_clocks()
             else:
                 self.delete_all_users_clocks(user)
-
-    def global_clicked(self):
-        try:
-            self.set_monthly_time_and_income(self.current_clock.total_monthly_time)
-        except AttributeError:
-            self.set_monthly_time_and_income(timedelta())
 
     def export_all_invoices(self):
         self.export_invoices(self.users)
@@ -167,6 +208,9 @@ class Gui(MainWindow.Ui_MainWindow):
         if value:
             self.load_clock()
 
+    def clock_table_select_clicked(self, item):
+        self.clock_table_edit_triggered(item.row(), item.column(), item.data(QtCore.Qt.UserRole))
+
     def clock_table_edit_triggered(self, row_number, column, data):
         new_date_time = get_new_date_time(data)
         if isinstance(new_date_time, datetime):
@@ -188,6 +232,11 @@ class Gui(MainWindow.Ui_MainWindow):
         if dialog.result():
             if dialog.user_location_changed:
                 self.move_users(dialog.previous_user_save_location)
+            if dialog.dash_buttons_activated_changed:
+                if dialog.dash_buttons_activated:
+                    self.activate_dash_buttons()
+                else:
+                    self.deactivate_dash_buttons()
 
     def move_users(self, old_directory):
         current_user = self.userBox.currentIndex()
@@ -279,14 +328,7 @@ class Gui(MainWindow.Ui_MainWindow):
         for category in self.categories:
             self.categoryBox.addItem(category.name, category)
 
-    def reset_clock_values(self):
-        self.current_category = None
-        self.current_clock = None
-        self.categories = []
-        self.try_to_set_monthly_time_and_income()
-
     def user_box_changed(self):
-        self.reset_clock_values()
         if self.userBox.currentIndex() < 0:
             enabled = False
             self.current_user = None
@@ -359,12 +401,6 @@ class Gui(MainWindow.Ui_MainWindow):
             self.clockButton.setText('Clock Out')
         else:
             self.clockButton.setText('Clock In')
-
-    def try_to_set_monthly_time_and_income(self):
-        try:
-            self.set_monthly_time_and_income(self.current_clock.total_monthly_time)
-        except AttributeError:
-            self.set_monthly_time_and_income(timedelta())
 
     def set_monthly_time_and_income(self, total):
         if self.globalRadioButton.isChecked():

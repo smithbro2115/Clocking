@@ -12,6 +12,8 @@ class PreferenceDialog(QtWidgets.QDialog):
         self.ui.setupUi(self)
         self.user_location_changed = False
         self.reset_clocks_after_export_changed = False
+        self.dash_buttons_activated_changed = False
+        self.dash_buttons_activated = None
         self.setStyleSheet(qdarkstyle.load_stylesheet_pyqt5())
         self.ui.browseUserSaveLoationButton.clicked.connect(self.browse_for_folder)
         self.previous_user_save_location = read_from_config('USERS', 'USER_SAVE_LOCATION')
@@ -26,12 +28,25 @@ class PreferenceDialog(QtWidgets.QDialog):
             pass
         self.ui.userSaveLocationLineEdit.textChanged.connect(self.user_loc_changed)
         self.ui.resetClocksAfterExportingInvoicesCheckBox.clicked.connect(self.reset_clocks_export_changed)
+        self.ui.amazonButtonsCheckBox.clicked.connect(self.dash_buttons_activated_changed_clicked)
+        self.setup_dash_button_prefs()
+
+    def setup_dash_button_prefs(self):
+        try:
+            self.dash_buttons_activated = bool(int(read_from_config('BUTTONS', 'activated')))
+            self.ui.amazonButtonsCheckBox.setChecked(self.dash_buttons_activated)
+        except (NoSectionError, NoOptionError):
+            self.dash_buttons_activated = None
 
     def user_loc_changed(self):
         self.user_location_changed = True
 
     def reset_clocks_export_changed(self):
         self.reset_clocks_after_export_changed = True
+
+    def dash_buttons_activated_changed_clicked(self):
+        self.dash_buttons_activated = self.ui.amazonButtonsCheckBox.isChecked()
+        self.dash_buttons_activated_changed = True
 
     def browse_for_folder(self):
         dialog = GetFolderLocationDialog(self.previous_user_save_location)
@@ -45,6 +60,8 @@ class PreferenceDialog(QtWidgets.QDialog):
         if self.reset_clocks_after_export_changed:
             add_to_config('EXPORTING', 'reset_clocks_after_export',
                           int(self.ui.resetClocksAfterExportingInvoicesCheckBox.isChecked()))
+        if self.dash_buttons_activated_changed:
+            add_to_config('BUTTONS', 'activated', int(self.ui.amazonButtonsCheckBox.isChecked()))
         super(PreferenceDialog, self).accept()
 
 

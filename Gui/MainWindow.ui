@@ -301,6 +301,13 @@
     <addaction name="separator"/>
     <addaction name="actionPreferences"/>
    </widget>
+   <widget class="QMenu" name="menuButtons">
+    <property name="title">
+     <string>Buttons</string>
+    </property>
+    <addaction name="actionAdd_Button"/>
+    <addaction name="actionAssign_Buttons"/>
+   </widget>
    <widget class="QMenu" name="menuEdit">
     <property name="title">
      <string>Edit</string>
@@ -317,6 +324,7 @@
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
+   <addaction name="menuButtons"/>
   </widget>
   <action name="actionAdd_Button">
    <property name="text">

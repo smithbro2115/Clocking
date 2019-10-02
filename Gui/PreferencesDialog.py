@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'Z:\Employee Folders\Josh\Programs\PreferencesDialog.ui'
+# Form implementation generated from reading ui file 'C:\Users\Josh\PycharmProjects\Clocking\Gui\PreferencesDialog.ui'
 #
 # Created by: PyQt5 UI code generator 5.11.3
 #
@@ -11,7 +11,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_Dialog(object):
     def setupUi(self, Dialog):
         Dialog.setObjectName("Dialog")
-        Dialog.resize(470, 96)
+        Dialog.resize(435, 95)
         self.gridLayout = QtWidgets.QGridLayout(Dialog)
         self.gridLayout.setObjectName("gridLayout")
         self.label = QtWidgets.QLabel(Dialog)
@@ -43,6 +43,9 @@ class Ui_Dialog(object):
         self.resetClocksAfterExportingInvoicesCheckBox.setLayoutDirection(QtCore.Qt.LeftToRight)
         self.resetClocksAfterExportingInvoicesCheckBox.setObjectName("resetClocksAfterExportingInvoicesCheckBox")
         self.gridLayout.addWidget(self.resetClocksAfterExportingInvoicesCheckBox, 1, 0, 1, 2)
+        self.amazonButtonsCheckBox = QtWidgets.QCheckBox(Dialog)
+        self.amazonButtonsCheckBox.setObjectName("amazonButtonsCheckBox")
+        self.gridLayout.addWidget(self.amazonButtonsCheckBox, 1, 2, 1, 1)
 
         self.retranslateUi(Dialog)
         self.buttonBox.accepted.connect(Dialog.accept)
@@ -55,4 +58,5 @@ class Ui_Dialog(object):
         self.label.setText(_translate("Dialog", "User Save Location:"))
         self.browseUserSaveLoationButton.setText(_translate("Dialog", "..."))
         self.resetClocksAfterExportingInvoicesCheckBox.setText(_translate("Dialog", "Reset Clocks After Exporting Invoice"))
+        self.amazonButtonsCheckBox.setText(_translate("Dialog", "Allow Amazon Buttons To Clock In"))
 

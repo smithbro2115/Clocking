@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'Z:\Employee Folders\Josh\Programs\MainWindow.ui'
+# Form implementation generated from reading ui file 'Z:\Employee Folders\Josh\Programs\Clocking\Gui\MainWindow.ui'
 #
 # Created by: PyQt5 UI code generator 5.11.3
 #
@@ -176,6 +176,8 @@ class Ui_MainWindow(object):
         self.menubar.setObjectName("menubar")
         self.menuFile = QtWidgets.QMenu(self.menubar)
         self.menuFile.setObjectName("menuFile")
+        self.menuButtons = QtWidgets.QMenu(self.menubar)
+        self.menuButtons.setObjectName("menuButtons")
         self.menuEdit = QtWidgets.QMenu(self.menubar)
         self.menuEdit.setObjectName("menuEdit")
         MainWindow.setMenuBar(self.menubar)
@@ -233,6 +235,8 @@ class Ui_MainWindow(object):
         self.menuFile.addAction(self.actionExport_All_Invoices)
         self.menuFile.addSeparator()
         self.menuFile.addAction(self.actionPreferences)
+        self.menuButtons.addAction(self.actionAdd_Button)
+        self.menuButtons.addAction(self.actionAssign_Buttons)
         self.menuEdit.addAction(self.userAddAction_2)
         self.menuEdit.addAction(self.actionEdit_User)
         self.menuEdit.addAction(self.actionDelete_User)
@@ -244,6 +248,7 @@ class Ui_MainWindow(object):
         self.menuEdit.addAction(self.actionClock)
         self.menubar.addAction(self.menuFile.menuAction())
         self.menubar.addAction(self.menuEdit.menuAction())
+        self.menubar.addAction(self.menuButtons.menuAction())
 
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
@@ -262,6 +267,7 @@ class Ui_MainWindow(object):
         self.addCategoryButton.setText(_translate("MainWindow", "Add Category"))
         self.addUserButton.setText(_translate("MainWindow", "Add User"))
         self.menuFile.setTitle(_translate("MainWindow", "File"))
+        self.menuButtons.setTitle(_translate("MainWindow", "Buttons"))
         self.menuEdit.setTitle(_translate("MainWindow", "Edit"))
         self.actionAdd_Button.setText(_translate("MainWindow", "Add Button"))
         self.actionExport_Invoice.setText(_translate("MainWindow", "Export Invoice"))
