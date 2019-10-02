@@ -1,0 +1,6 @@
+PyQt5==5.11.3
+QDarkStyle==2.5.4
+openpyxl==2.5.4
+plyer==1.4.0
+scapy==2.4.2
+win10toast==0.9

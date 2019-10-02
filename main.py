@@ -7,6 +7,7 @@ import qdarkstyle
 import Categories
 from time import sleep
 from Buttons import AddButtonDialog
+from platform import system
 from Gui.CustomPyQtDialogsAndWidgets import AssignButtonDialog, TimedEmitter
 from Clock import get_new_date_time, DateAndTimeContextMenu, delete_clock
 from Users import add_user, load_users, delete_user, edit_user, move_user
@@ -16,6 +17,9 @@ from configparser import NoSectionError, NoOptionError
 from LocalFileHandling import delete_directory, read_from_config, get_app_data_folder, add_to_config, \
     add_to_dict_from_csv_file, read_dict_from_csv_file, convert_string_tuple_into_tuple_dict, save_dict_to_csv_file, \
     write_to_cache, read_from_cache
+
+
+PLATFORM = system()
 
 
 class Gui(MainWindow.Ui_MainWindow):
