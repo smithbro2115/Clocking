@@ -43,7 +43,7 @@ class Gui(MainWindow.Ui_MainWindow):
         self.clockTableWidget.customContextMenuRequested.connect(self.table_right_clicked)
         self.clockTableWidget.setStyleSheet("""QTableWidget::item:hover { background: transparent; }""")
         self.actionEdit_User.triggered.connect(self.edit_user_clicked)
-        self.clockTableWidget.itemDoubleClicked.connect(self.clock_table_select_clicked)
+        self.clockTableWidget.itemDoubleClicked.connect(self.clock_table_edit_triggered)
         self.actionClock.triggered.connect(self.clock_button_clicked)
         self.actionExport_Invoice.triggered.connect(lambda: self.export_invoice_triggered(self.current_user, self.categories))
         self.actionExport_All_Invoices.triggered.connect(self.export_all_invoices)
@@ -166,9 +166,6 @@ class Gui(MainWindow.Ui_MainWindow):
         self.clockTableWidget.setRowCount(0)
         if value:
             self.load_clock()
-
-    def clock_table_select_clicked(self, item):
-        self.clock_table_edit_triggered(item.row(), item.column(), item.data(QtCore.Qt.UserRole))
 
     def clock_table_edit_triggered(self, row_number, column, data):
         new_date_time = get_new_date_time(data)
