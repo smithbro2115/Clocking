@@ -78,6 +78,8 @@ class Gui(MainWindow.Ui_MainWindow):
         self.try_to_recall_last_used_settings()
         self.update_thread.signals.time_elapsed.connect(self.update_table)
         self.update_thread_pool.start(self.update_thread)
+        if system() == 'Mac':
+            self.menubar.layout().removeWidget(self.menuButtons)
 
     def __del__(self):
         self.update_thread.canceled = True

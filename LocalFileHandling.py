@@ -2,6 +2,7 @@ import pickle
 import os
 import csv
 import configparser
+from platform import system
 from ast import literal_eval
 
 
@@ -186,7 +187,10 @@ def does_folder_exist(path):
 
 
 def get_app_data_folder(folder):
-    app_data_path = os.path.expanduser('~/Documents')
+    if system() == 'Windows':
+        app_data_path = os.getenv('APPDATA')
+    else:
+        app_data_path = os.path.expanduser('~/Documents')
     clocking_path = make_folder_if_it_does_not_exist(app_data_path, 'Clocking')
     return make_folder_if_it_does_not_exist(clocking_path, folder)
 
