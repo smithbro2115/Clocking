@@ -6,7 +6,6 @@ import getpass
 import qdarkstyle
 import Categories
 from time import sleep
-from Buttons import AddButtonDialog
 from platform import system
 from Gui.CustomPyQtDialogsAndWidgets import AssignButtonDialog, TimedEmitter
 from Clock import get_new_date_time, DateAndTimeContextMenu, delete_clock
@@ -17,6 +16,8 @@ from configparser import NoSectionError, NoOptionError
 from LocalFileHandling import delete_directory, read_from_config, get_app_data_folder, add_to_config, \
     add_to_dict_from_csv_file, read_dict_from_csv_file, convert_string_tuple_into_tuple_dict, save_dict_to_csv_file, \
     write_to_cache, read_from_cache
+if system() == 'Windows':
+    from Buttons import AddButtonDialog
 
 
 PLATFORM = system()
@@ -78,8 +79,8 @@ class Gui(MainWindow.Ui_MainWindow):
         self.try_to_recall_last_used_settings()
         self.update_thread.signals.time_elapsed.connect(self.update_table)
         self.update_thread_pool.start(self.update_thread)
-        if system() == 'Mac':
-            self.menubar.layout().removeWidget(self.menuButtons)
+        if system() == 'Darwin':
+            self.menubar.removeAction(self.menubar.actions()[2])
 
     def __del__(self):
         self.update_thread.canceled = True

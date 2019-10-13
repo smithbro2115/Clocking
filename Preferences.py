@@ -30,9 +30,10 @@ class PreferenceDialog(QtWidgets.QDialog):
         self.ui.userSaveLocationLineEdit.textChanged.connect(self.user_loc_changed)
         self.ui.resetClocksAfterExportingInvoicesCheckBox.clicked.connect(self.reset_clocks_export_changed)
         self.ui.amazonButtonsCheckBox.clicked.connect(self.dash_buttons_activated_changed_clicked)
-        if system() == 'Mac':
+        if system() == 'Darwin':
             self.ui.amazonButtonsCheckBox.setHidden(True)
-        self.setup_dash_button_prefs()
+        else:
+            self.setup_dash_button_prefs()
 
     def setup_dash_button_prefs(self):
         try:
