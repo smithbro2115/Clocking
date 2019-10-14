@@ -4,9 +4,9 @@ block_cipher = None
 
 
 a = Analysis(['main.py'],
-             pathex=['/Users/pro/PycharmProjects/Clocking'],
+             pathex=['/Users/pro/PycharmProjects/Clocking', "C:/Users/Josh/PycharmProjects/Clocking"],
              binaries=[],
-             datas=[('Invoice.xlsx', '.'),],
+             datas=[('Invoice.xlsx', '.'), ('Clocking Buttons.exe', '.')],
              hiddenimports=[],
              hookspath=[],
              runtime_hooks=[],
@@ -23,14 +23,14 @@ exe = EXE(pyz,
           a.zipfiles,
           a.datas,
           [],
-          name='main',
+          name='Clocking',
           debug=False,
           bootloader_ignore_signals=False,
           strip=False,
           upx=True,
           upx_exclude=[],
           runtime_tmpdir=None,
-          console=False, icon="clock_icon.icns" )
+          console=False, icon="clock_icon.ico" )
 app = BUNDLE(exe,
              name='Clocking.app',
              icon='clock_icon.icns',
