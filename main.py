@@ -1,7 +1,7 @@
 from PyQt5 import QtWidgets, QtCore
 from Gui import MainWindow
 from utils import are_you_sure_prompt, make_dir, ChoiceDialog, resource_path, copy_file_to_directory, start_program,\
-    close_program, delete_file
+    close_program, delete_file, error_dialog
 import getpass
 import qdarkstyle
 import Categories
@@ -221,11 +221,15 @@ class Gui(MainWindow.Ui_MainWindow):
     def clock_table_edit_triggered(self, row_number, column, data):
         new_date_time = get_new_date_time(data)
         if isinstance(new_date_time, datetime):
-            row = self.current_clock.edit_clock_time(row_number, column, new_date_time)
-            if row:
-                for index, item in enumerate(row):
-                    self.set_next_item(row_number, index, item)
-                self.set_monthly_time_and_income(self.current_clock.total_monthly_time)
+            try:
+                row = self.current_clock.edit_clock_time(row_number, column, new_date_time)
+            except RuntimeError as e:
+                error_dialog(str(e))
+            else:
+                if row:
+                    for index, item in enumerate(row):
+                        self.set_next_item(row_number, index, item)
+                    self.set_monthly_time_and_income(self.current_clock.total_monthly_time)
 
     def clock_table_delete_triggered(self, row):
         if are_you_sure_prompt('Are you sure you want to delete this row?'):
@@ -472,6 +476,8 @@ class Gui(MainWindow.Ui_MainWindow):
                 value = format_duration_from_seconds_with_seconds(value.total_seconds())
             except AttributeError:
                 pass
+        if value == "0:00:00":
+            return ""
         return value
 
     def clock_in_table(self, time):

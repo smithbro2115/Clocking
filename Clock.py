@@ -72,6 +72,14 @@ class Clock:
         row = old_rows[row_number]
         parsed_row = self.parse_row(row)
         parsed_row[column_number] = new_time - timedelta(microseconds=1)
+        try:
+            parsed_row = self.edit_clock_time_of_past(parsed_row, row, row_number, old_rows)
+        except TypeError:
+            parsed_row = self.edit_present_clock_time(parsed_row, new_time)
+            self.edit_row(row_number, old_rows, row)
+        return parsed_row
+
+    def edit_clock_time_of_past(self, parsed_row, row, row_number, old_rows):
         total_time = parsed_row[1] - parsed_row[0]
         if total_time.total_seconds() >= 0:
             self.total_monthly_time -= parsed_row[2]
@@ -81,6 +89,13 @@ class Clock:
             row[2] = self.convert_to_days(total_time)
             self.edit_row(row_number, old_rows, row)
             return parsed_row
+
+    @staticmethod
+    def edit_present_clock_time(parsed_row, new_time):
+        if new_time > datetime.now():
+            raise RuntimeError("You can't clock into the future")
+        parsed_row = parsed_row.copy()
+        return parsed_row
 
     def delete_row(self, row_number):
         old_rows = get_list_from_csv(self.file_path)
@@ -104,10 +119,11 @@ class Clock:
         row[0] = datetime.strptime(row[0], '%Y-%m-%d %H:%M:%S.%f')
         try:
             row[1] = datetime.strptime(row[1], '%Y-%m-%d %H:%M:%S.%f')
+            row[2] = timedelta(days=float(row[2]))
         except ValueError:
             self.state = True
             self.current_time = row[0]
-        row[2] = timedelta(days=float(row[2]))
+            row[2] = timedelta()
         return row
 
     def check_if_clocked_in(self, rows):
