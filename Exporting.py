@@ -101,10 +101,12 @@ def get_invoice_folder_name():
 
 
 class GetFileLocationDialog(QtWidgets.QFileDialog):
-    def __init__(self, default_name):
+    def __init__(self, default_name, caption, default_location=None):
         super(GetFileLocationDialog, self).__init__()
+        self.caption = caption
+        self.default_location = default_location if default_location else '/'
         self.default_name = default_name
 
     def get_save_path(self):
-        result = self.getSaveFileName(directory=f'/{self.default_name}', caption='Export Invoice')[0]
+        result = self.getSaveFileName(directory=f'{self.default_location}{self.default_name}', caption=self.caption)[0]
         return result

@@ -7,7 +7,7 @@ import qdarkstyle
 import Categories
 from time import sleep
 from platform import system
-from Gui.CustomPyQtDialogsAndWidgets import AssignButtonDialog, TimedEmitter
+from Gui.CustomPyQtDialogsAndWidgets import AssignButtonDialog, TimedEmitter, EmailTemplate
 from Clock import get_new_date_time, DateAndTimeContextMenu, delete_clock
 from Users import add_user, load_users, delete_user, edit_user, move_user
 from datetime import timedelta, datetime
@@ -55,6 +55,7 @@ class Gui(MainWindow.Ui_MainWindow):
         self.clockTableWidget.customContextMenuRequested.connect(self.table_right_clicked)
         self.clockTableWidget.setStyleSheet("""QTableWidget::item:hover { background: transparent; }""")
         self.actionEdit_User.triggered.connect(self.edit_user_clicked)
+        self.actionSet_Email_Template.triggered.connect(self.set_email_template_clicked)
         self.clockTableWidget.itemDoubleClicked.connect(self.clock_table_select_clicked)
         self.actionClock.triggered.connect(self.clock_button_clicked)
         self.actionExport_Invoice.triggered.connect(lambda: self.export_invoice_triggered(self.current_user, self.categories))
@@ -140,7 +141,7 @@ class Gui(MainWindow.Ui_MainWindow):
     def export_invoice_triggered(self, user, categories):
         from Exporting import make_invoice_excel, GetFileLocationDialog, get_file_invoice_name
         if self.current_category:
-            file_location_dialog = GetFileLocationDialog(get_file_invoice_name(user))
+            file_location_dialog = GetFileLocationDialog(get_file_invoice_name(user), caption='Export Invoice')
             result = file_location_dialog.get_save_path()
             if result:
                 delete_clocks_dialog = ChoiceDialog('Do you want to reset all the clocks for this user?', 'EXPORTING',
@@ -162,7 +163,7 @@ class Gui(MainWindow.Ui_MainWindow):
     def export_invoices(self, users):
         from Exporting import make_invoice_excel, GetFileLocationDialog, get_file_invoice_name, get_invoice_folder_name
         folder_name = get_invoice_folder_name()
-        dialog = GetFileLocationDialog(folder_name)
+        dialog = GetFileLocationDialog(folder_name, "Export Invoices")
         path = dialog.get_save_path()
         make_dir(path)
         if path:
@@ -214,6 +215,10 @@ class Gui(MainWindow.Ui_MainWindow):
         self.clockTableWidget.setRowCount(0)
         if value:
             self.load_clock()
+
+    def set_email_template_clicked(self):
+        dialog = EmailTemplate()
+        dialog.exec_()
 
     def clock_table_select_clicked(self, item):
         self.clock_table_edit_triggered(item.row(), item.column(), item.data(QtCore.Qt.UserRole))

@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'Z:\Employee Folders\Josh\Programs\Clocking\Gui\MainWindow.ui'
+# Form implementation generated from reading ui file 'C:\Users\Josh\PycharmProjects\Clocking\Gui\MainWindow.ui'
 #
-# Created by: PyQt5 UI code generator 5.11.3
+# Created by: PyQt5 UI code generator 5.13.1
 #
 # WARNING! All changes made in this file will be lost!
 
+
 from PyQt5 import QtCore, QtGui, QtWidgets
+
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -180,6 +182,8 @@ class Ui_MainWindow(object):
         self.menuButtons.setObjectName("menuButtons")
         self.menuEdit = QtWidgets.QMenu(self.menubar)
         self.menuEdit.setObjectName("menuEdit")
+        self.menuEmailing = QtWidgets.QMenu(self.menubar)
+        self.menuEmailing.setObjectName("menuEmailing")
         MainWindow.setMenuBar(self.menubar)
         self.actionAdd_Button = QtWidgets.QAction(MainWindow)
         self.actionAdd_Button.setObjectName("actionAdd_Button")
@@ -231,6 +235,8 @@ class Ui_MainWindow(object):
         self.actionClock.setObjectName("actionClock")
         self.actionAssign_Buttons = QtWidgets.QAction(MainWindow)
         self.actionAssign_Buttons.setObjectName("actionAssign_Buttons")
+        self.actionSet_Email_Template = QtWidgets.QAction(MainWindow)
+        self.actionSet_Email_Template.setObjectName("actionSet_Email_Template")
         self.menuFile.addAction(self.actionExport_Invoice)
         self.menuFile.addAction(self.actionExport_All_Invoices)
         self.menuFile.addSeparator()
@@ -246,8 +252,10 @@ class Ui_MainWindow(object):
         self.menuEdit.addAction(self.actionDelete_Category)
         self.menuEdit.addSeparator()
         self.menuEdit.addAction(self.actionClock)
+        self.menuEmailing.addAction(self.actionSet_Email_Template)
         self.menubar.addAction(self.menuFile.menuAction())
         self.menubar.addAction(self.menuEdit.menuAction())
+        self.menubar.addAction(self.menuEmailing.menuAction())
         self.menubar.addAction(self.menuButtons.menuAction())
 
         self.retranslateUi(MainWindow)
@@ -269,6 +277,7 @@ class Ui_MainWindow(object):
         self.menuFile.setTitle(_translate("MainWindow", "File"))
         self.menuButtons.setTitle(_translate("MainWindow", "Buttons"))
         self.menuEdit.setTitle(_translate("MainWindow", "Edit"))
+        self.menuEmailing.setTitle(_translate("MainWindow", "Emailing"))
         self.actionAdd_Button.setText(_translate("MainWindow", "Add Button"))
         self.actionExport_Invoice.setText(_translate("MainWindow", "Export Invoice"))
         self.actionExport_Invoice.setShortcut(_translate("MainWindow", "Ctrl+I"))
@@ -299,4 +308,4 @@ class Ui_MainWindow(object):
         self.actionClock.setText(_translate("MainWindow", "Clock"))
         self.actionClock.setShortcut(_translate("MainWindow", "Space"))
         self.actionAssign_Buttons.setText(_translate("MainWindow", "Assign Buttons"))
-
+        self.actionSet_Email_Template.setText(_translate("MainWindow", "Set Email Template"))
