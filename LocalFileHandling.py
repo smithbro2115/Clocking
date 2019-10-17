@@ -111,12 +111,12 @@ def delete_dict_from_csv(path, dict_to_delete):
 
 def load_from_yaml(path):
     with open(path, 'r') as f:
-        return yaml.load(f)
+        return yaml.load(f, Loader=yaml.FullLoader)
 
 
 def save_to_yaml(path, value):
     with open(path, 'w') as f:
-        yaml.dump(f, value)
+        yaml.dump(value, f)
 
 
 def add_to_list_if_name_not_duplicate(dict_list, new_dict, keyword):

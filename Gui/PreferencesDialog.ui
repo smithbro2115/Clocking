@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>435</width>
-    <height>100</height>
+    <height>113</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -88,6 +88,13 @@
      </property>
      <property name="standardButtons">
       <set>QDialogButtonBox::Cancel|QDialogButtonBox::Save</set>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="0">
+    <widget class="QCheckBox" name="emailInvoicesCheckBox">
+     <property name="text">
+      <string>Automatically email invoices</string>
      </property>
     </widget>
    </item>

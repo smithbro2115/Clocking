@@ -14,9 +14,12 @@ class PreferenceDialog(QtWidgets.QDialog):
         self.user_location_changed = False
         self.reset_clocks_after_export_changed = False
         self.dash_buttons_activated_changed = False
+        self.email_invoices_changed = False
+        self.email_invoices_activated = False
         self.dash_buttons_activated = None
         self.setStyleSheet(qdarkstyle.load_stylesheet_pyqt5())
         self.ui.browseUserSaveLoationButton.clicked.connect(self.browse_for_folder)
+        self.ui.emailInvoicesCheckBox.clicked.connect(self.email_invoices_clicked)
         self.previous_user_save_location = read_from_config('USERS', 'USER_SAVE_LOCATION')
         try:
             self.reset_clocks_after_export = bool(int(read_from_config('EXPORTING', 'reset_clocks_after_export')))
@@ -34,6 +37,7 @@ class PreferenceDialog(QtWidgets.QDialog):
             self.ui.amazonButtonsCheckBox.setHidden(True)
         else:
             self.setup_dash_button_prefs()
+        self.setup_email_invoices_prefs()
 
     def setup_dash_button_prefs(self):
         try:
@@ -41,6 +45,13 @@ class PreferenceDialog(QtWidgets.QDialog):
             self.ui.amazonButtonsCheckBox.setChecked(self.dash_buttons_activated)
         except (NoSectionError, NoOptionError):
             self.dash_buttons_activated = None
+
+    def setup_email_invoices_prefs(self):
+        try:
+            self.email_invoices_activated = bool(int(read_from_config('EMAIL', 'activated')))
+            self.ui.emailInvoicesCheckBox.setChecked(self.email_invoices_activated)
+        except (NoSectionError, NoOptionError):
+            self.email_invoices_activated = None
 
     def user_loc_changed(self):
         self.user_location_changed = True
@@ -51,6 +62,10 @@ class PreferenceDialog(QtWidgets.QDialog):
     def dash_buttons_activated_changed_clicked(self):
         self.dash_buttons_activated = self.ui.amazonButtonsCheckBox.isChecked()
         self.dash_buttons_activated_changed = True
+
+    def email_invoices_clicked(self):
+        self.email_invoices_activated = self.ui.emailInvoicesCheckBox.isChecked()
+        self.email_invoices_changed = True
 
     def browse_for_folder(self):
         dialog = GetFolderLocationDialog(self.previous_user_save_location)
@@ -66,6 +81,8 @@ class PreferenceDialog(QtWidgets.QDialog):
                           int(self.ui.resetClocksAfterExportingInvoicesCheckBox.isChecked()))
         if self.dash_buttons_activated_changed:
             add_to_config('BUTTONS', 'activated', int(self.ui.amazonButtonsCheckBox.isChecked()))
+        if self.email_invoices_changed:
+            add_to_config('EMAIL', 'activated', int(self.ui.emailInvoicesCheckBox.isChecked()))
         super(PreferenceDialog, self).accept()
 
 

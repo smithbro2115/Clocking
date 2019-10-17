@@ -9,7 +9,7 @@ from Gui.AssignDatesUI import Ui_Dialog as AssignDatesUI
 from Categories import load_categories
 from Exporting import GetFileLocationDialog
 from utils import add_to_config, read_from_config, NoSectionError, NoOptionError
-from LocalFileHandling import get_app_data_folder
+from LocalFileHandling import get_app_data_folder, load_from_yaml
 import os
 from Emailing import get_email_settings_from_text
 

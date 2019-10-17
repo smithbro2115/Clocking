@@ -16,6 +16,7 @@ from configparser import NoSectionError, NoOptionError
 from LocalFileHandling import delete_directory, read_from_config, get_app_data_folder, add_to_config, \
     add_to_dict_from_csv_file, read_dict_from_csv_file, convert_string_tuple_into_tuple_dict, save_dict_to_csv_file, \
     write_to_cache, read_from_cache
+import Scheduling
 if system() == 'Windows':
     from Buttons import AddButtonDialog
 
@@ -33,8 +34,10 @@ class Gui(MainWindow.Ui_MainWindow):
         self.buttons_activated = False
         self.buttons_file_path = f"{get_app_data_folder('Buttons')}/Buttons.csv"
         self._global_monthly_time = timedelta()
-        self.update_thread_pool = QtCore.QThreadPool()
+        self.background_thread_pool = QtCore.QThreadPool()
         self.update_thread = TimedEmitter(2, -1)
+        self.email_scheduler_thread = TimedEmitter(30, -1)
+        self.email_scheduler = Scheduling.Scheduler('days', 'email_scheduler', lambda: print('triggered'))
 
     def setup_additional(self, main_window):
         main_window.setStyleSheet(qdarkstyle.load_stylesheet_pyqt5())
@@ -80,12 +83,19 @@ class Gui(MainWindow.Ui_MainWindow):
                                                self.set_monthly_time_and_income(self.current_clock.total_monthly_time))
         self.try_to_recall_last_used_settings()
         self.update_thread.signals.time_elapsed.connect(self.update_table)
-        self.update_thread_pool.start(self.update_thread)
+        self.email_scheduler_thread.signals.time_elapsed.connect(self.email_scheduler.check)
+        self.background_thread_pool.start(self.update_thread)
+        try:
+            if bool(int(read_from_config('EMAIL', 'activated'))):
+                self.background_thread_pool.start(self.email_scheduler_thread)
+        except (NoOptionError, NoSectionError):
+            pass
         if system() == 'Darwin':
             self.menubar.removeAction(self.menubar.actions()[2])
 
     def __del__(self):
         self.update_thread.canceled = True
+        self.email_scheduler_thread.canceled = True
 
     def try_to_recall_last_used_settings(self):
         try:
@@ -224,6 +234,8 @@ class Gui(MainWindow.Ui_MainWindow):
     def assign_email_dates_clicked(self):
         dialog = AssignDatesDialog()
         dialog.exec_()
+        if dialog.result():
+            self.email_scheduler.set_times(*dialog.selected_dates)
 
     def clock_table_select_clicked(self, item):
         self.clock_table_edit_triggered(item.row(), item.column(), item.data(QtCore.Qt.UserRole))
@@ -258,6 +270,13 @@ class Gui(MainWindow.Ui_MainWindow):
                     self.activate_dash_buttons()
                 else:
                     self.deactivate_dash_buttons()
+            if dialog.email_invoices_changed:
+                if dialog.email_invoices_activated:
+                    self.email_scheduler_thread = TimedEmitter(30, -1)
+                    self.email_scheduler_thread.signals.time_elapsed.connect(self.email_scheduler.check)
+                    self.background_thread_pool.start(self.email_scheduler_thread)
+                else:
+                    self.email_scheduler_thread.canceled = True
 
     def move_users(self, old_directory):
         current_user = self.userBox.currentIndex()
