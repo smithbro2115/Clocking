@@ -7,7 +7,8 @@ import qdarkstyle
 import Categories
 from time import sleep
 from platform import system
-from Gui.CustomPyQtDialogsAndWidgets import AssignButtonDialog, TimedEmitter, EmailTemplate, AssignDatesDialog
+from Gui.CustomPyQtDialogsAndWidgets import AssignButtonDialog, TimedEmitter, EmailTemplate, AssignDatesDialog, \
+    SavePathDialog
 from Clock import get_new_date_time, DateAndTimeContextMenu, delete_clock
 from Users import add_user, load_users, delete_user, edit_user, move_user
 from datetime import timedelta, datetime
@@ -64,6 +65,7 @@ class Gui(MainWindow.Ui_MainWindow):
         self.actionClock.triggered.connect(self.clock_button_clicked)
         self.actionExport_Invoice.triggered.connect(lambda: self.export_invoice_triggered(self.current_user, self.categories))
         self.actionExport_All_Invoices.triggered.connect(self.export_all_invoices)
+        self.actionSet_Default_Invoice_Path.triggered.connect(self.set_default_invoice_path)
         self.actionPreferences.triggered.connect(self.preferences_clicked)
         self.actionAdd_Button.triggered.connect(self.add_button_action_triggered)
         self.actionAssign_Buttons.triggered.connect(self.assign_buttons_action_triggered)
@@ -171,7 +173,8 @@ class Gui(MainWindow.Ui_MainWindow):
     def export_all_invoices(self):
         self.export_invoices(self.users)
 
-    def export_invoices(self, users):
+    @staticmethod
+    def export_invoices(users):
         from Exporting import make_invoice_excel, GetFileLocationDialog, get_file_invoice_name, get_invoice_folder_name
         folder_name = get_invoice_folder_name()
         dialog = GetFileLocationDialog(folder_name, "Export Invoices")
@@ -180,6 +183,13 @@ class Gui(MainWindow.Ui_MainWindow):
         if path:
             for user in users:
                 make_invoice_excel(user, Categories.load_categories(user), path=f"{path}/{get_file_invoice_name(user)}")
+
+    @staticmethod
+    def set_default_invoice_path():
+        dialog = SavePathDialog()
+        result = dialog.exec_()
+        if result:
+            add_to_config('INVOICE', 'save_path', dialog.save_path)
 
     def load_config(self):
         try:

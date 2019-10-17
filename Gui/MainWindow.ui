@@ -298,6 +298,7 @@
     </property>
     <addaction name="actionExport_Invoice"/>
     <addaction name="actionExport_All_Invoices"/>
+    <addaction name="actionSet_Default_Invoice_Path"/>
     <addaction name="separator"/>
     <addaction name="actionPreferences"/>
    </widget>
@@ -502,6 +503,11 @@
   <action name="actionAssign_Days_to_Send_Emails">
    <property name="text">
     <string>Assign Days to Send Emails</string>
+   </property>
+  </action>
+  <action name="actionSet_Default_Invoice_Path">
+   <property name="text">
+    <string>Set Default Invoice Path</string>
    </property>
   </action>
  </widget>

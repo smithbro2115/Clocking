@@ -6,9 +6,10 @@ import qdarkstyle
 from Gui.AssignButton import Ui_Dialog as AssignButtonUI
 from Gui.EmailTemplateDialog import Ui_Dialog as EmailTemplateUI
 from Gui.AssignDatesUI import Ui_Dialog as AssignDatesUI
+from Gui.SavePathUI import Ui_Dialog as SavePathUI
 from Categories import load_categories
 from Exporting import GetFileLocationDialog
-from utils import add_to_config, read_from_config, NoSectionError, NoOptionError
+from utils import add_to_config, read_from_config, NoSectionError, NoOptionError, make_dir
 from LocalFileHandling import get_app_data_folder, load_from_yaml
 import os
 from Emailing import get_email_settings_from_text
@@ -221,3 +222,34 @@ class AssignDatesDialog(DialogTemplate):
     def accept(self) -> None:
         self.selected_dates = [item.data(8) for item in self.ui.tableWidget.selectedItems()]
         super(AssignDatesDialog, self).accept()
+
+
+class SavePathDialog(DialogTemplate):
+    def __init__(self):
+        super(SavePathDialog, self).__init__(SavePathUI)
+        self.ui.cancelPushButton.clicked.connect(self.reject)
+        self.ui.okPushButton.clicked.connect(self.accept)
+        try:
+            self.save_path = read_from_config('INVOICE', 'save_path')
+        except (NoSectionError, NoOptionError):
+            self.save_path = f"{get_app_data_folder('invoices')}/"
+        self.ui.lineEdit.setText(self.save_path)
+        self.ui.toolButton.clicked.connect(self.browse_button_clicked)
+
+    def browse_button_clicked(self):
+        dialog = GetFolderLocationDialog('Select Invoice Save Path', self.save_path)
+        result = dialog.get_save_path()
+        if result:
+            self.save_path = result
+            self.ui.lineEdit.setText(self.save_path)
+
+
+class GetFolderLocationDialog(QtWidgets.QFileDialog):
+    def __init__(self, caption, default_location=None):
+        super(GetFolderLocationDialog, self).__init__()
+        self.caption = caption
+        self.default_location = default_location if default_location else '/'
+
+    def get_save_path(self):
+        result = self.getExistingDirectory(directory=f'{self.default_location}', caption=self.caption)
+        return result
