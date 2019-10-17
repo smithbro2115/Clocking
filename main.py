@@ -7,7 +7,7 @@ import qdarkstyle
 import Categories
 from time import sleep
 from platform import system
-from Gui.CustomPyQtDialogsAndWidgets import AssignButtonDialog, TimedEmitter, EmailTemplate
+from Gui.CustomPyQtDialogsAndWidgets import AssignButtonDialog, TimedEmitter, EmailTemplate, AssignDatesDialog
 from Clock import get_new_date_time, DateAndTimeContextMenu, delete_clock
 from Users import add_user, load_users, delete_user, edit_user, move_user
 from datetime import timedelta, datetime
@@ -56,6 +56,7 @@ class Gui(MainWindow.Ui_MainWindow):
         self.clockTableWidget.setStyleSheet("""QTableWidget::item:hover { background: transparent; }""")
         self.actionEdit_User.triggered.connect(self.edit_user_clicked)
         self.actionSet_Email_Template.triggered.connect(self.set_email_template_clicked)
+        self.actionAssign_Days_to_Send_Emails.triggered.connect(self.assign_email_dates_clicked)
         self.clockTableWidget.itemDoubleClicked.connect(self.clock_table_select_clicked)
         self.actionClock.triggered.connect(self.clock_button_clicked)
         self.actionExport_Invoice.triggered.connect(lambda: self.export_invoice_triggered(self.current_user, self.categories))
@@ -218,6 +219,10 @@ class Gui(MainWindow.Ui_MainWindow):
 
     def set_email_template_clicked(self):
         dialog = EmailTemplate()
+        dialog.exec_()
+
+    def assign_email_dates_clicked(self):
+        dialog = AssignDatesDialog()
         dialog.exec_()
 
     def clock_table_select_clicked(self, item):

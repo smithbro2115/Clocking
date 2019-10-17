@@ -4,13 +4,14 @@ from PyQt5.QtCore import QDateTime, QObject, pyqtSlot, pyqtSignal, QRunnable, QT
 import time
 import qdarkstyle
 from Gui.AssignButton import Ui_Dialog as AssignButtonUI
-from Gui.EmailTemplateDialog import Ui_Dialog
+from Gui.EmailTemplateDialog import Ui_Dialog as EmailTemplateUI
+from Gui.AssignDatesUI import Ui_Dialog as AssignDatesUI
 from Categories import load_categories
 from Exporting import GetFileLocationDialog
 from utils import add_to_config, read_from_config, NoSectionError, NoOptionError
 from LocalFileHandling import get_app_data_folder
 import os
-from Emailing import get_subject_and_body_from_text
+from Emailing import get_email_settings_from_text
 
 
 class DialogTemplate(QDialog):
@@ -150,19 +151,34 @@ class ChildDroppableTreeWidget(QTreeWidget):
 class EmailTemplate(QDialog):
     def __init__(self):
         super(EmailTemplate, self).__init__()
-        self.ui = Ui_Dialog()
+        self.ui = EmailTemplateUI()
         self.ui.setupUi(self)
         self.setStyleSheet(qdarkstyle.load_stylesheet_pyqt5())
+        self.ui.okPushButton.clicked.connect(self.accept)
+        self.ui.cancelPushButton.clicked.connect(self.reject)
         try:
             path = read_from_config('EMAIL', 'template_save_path')
             with open(path, 'r') as f:
-                subject, body = get_subject_and_body_from_text(f.read())
+                recipient, subject, body = get_email_settings_from_text(f.read())
+                self.ui.recipientLineEdit.setText(recipient)
                 self.ui.subjectLineEdit.setText(subject)
                 self.ui.textEdit.setText(body)
         except (NoSectionError, NoOptionError):
             pass
         except FileNotFoundError:
             add_to_config('EMAIL', 'template_save_path', get_app_data_folder(''))
+        self.ui.recipientLineEdit.textChanged.connect(self.verify_fields)
+        self.ui.subjectLineEdit.textChanged.connect(self.verify_fields)
+        self.ui.textEdit.textChanged.connect(self.verify_fields)
+        self.verify_fields()
+
+    def verify_fields(self):
+        field_texts = [self.ui.recipientLineEdit.text(), self.ui.subjectLineEdit.text(), self.ui.textEdit.toPlainText()]
+        field_texts = [text.strip() for text in field_texts]
+        if '' not in field_texts:
+            self.ui.okPushButton.setEnabled(True)
+        else:
+            self.ui.okPushButton.setEnabled(False)
 
     @staticmethod
     def get_save_path():
@@ -180,7 +196,28 @@ class EmailTemplate(QDialog):
         path = self.get_save_path()
         try:
             with open(path, 'w') as f:
-                f.write(f"@subject\n{self.ui.subjectLineEdit.text()}\n\n@body\n{self.ui.textEdit.toPlainText()}")
+                f.write(f"@recipients\n{self.ui.recipientLineEdit.text()}\n\n@subject\n{self.ui.subjectLineEdit.text()}"
+                        f"\n\n@body\n{self.ui.textEdit.toPlainText()}")
+            add_to_config('EMAIL', 'template_set', 1)
             super(EmailTemplate, self).accept()
         except FileNotFoundError:
             pass
+
+
+class AssignDatesDialog(DialogTemplate):
+    def __init__(self):
+        super(AssignDatesDialog, self).__init__(AssignDatesUI)
+        self.ui.tableWidget.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
+        self.ui.tableWidget.verticalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
+        self.set_items_values()
+        self.selected_dates = []
+
+    def set_items_values(self):
+        for row in range(self.ui.tableWidget.rowCount()):
+            for column in range(self.ui.tableWidget.columnCount()):
+                number = (row*7)+(column+1)
+                self.ui.tableWidget.item(row, column).setData(8, number)
+
+    def accept(self) -> None:
+        self.selected_dates = [item.data(8) for item in self.ui.tableWidget.selectedItems()]
+        super(AssignDatesDialog, self).accept()

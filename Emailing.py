@@ -16,10 +16,11 @@ def attach_invoice_to_msg(invoice_path, msg):
     msg.attach(part)
 
 
-def get_subject_and_body_from_text(text: str):
+def get_email_settings_from_text(text: str):
+    recipient = text[text.find('@recipients\n')+len('@recipients\n'):text.find('\n\n@subject')]
     subject = text[text.find("@subject\n")+len("@subject\n"):text.find("\n\n@body")]
     body = text[text.find("@body\n")+len("@body\n"):]
-    return subject, body
+    return recipient, subject, body
 
 # s = smtplib.SMTP(host="smtp.gmail.com", port=587)
 # s.starttls()
