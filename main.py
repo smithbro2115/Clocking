@@ -1,14 +1,15 @@
 from PyQt5 import QtWidgets, QtCore
 from Gui import MainWindow
 from utils import are_you_sure_prompt, make_dir, ChoiceDialog, resource_path, copy_file_to_directory, start_program,\
-    close_program, delete_file, error_dialog
+    close_program, delete_file, error_dialog, Worker
 import getpass
 import qdarkstyle
 import Categories
 from time import sleep
 from platform import system
+import Emailing
 from Gui.CustomPyQtDialogsAndWidgets import AssignButtonDialog, TimedEmitter, EmailTemplate, AssignDatesDialog, \
-    SavePathDialog, UsersToEmailDialog
+    SavePathDialog, UsersToEmailDialog, PleaseWaitDialog
 from Clock import get_new_date_time, DateAndTimeContextMenu, delete_clock
 from Users import add_user, load_users, delete_user, edit_user_dialog, move_user
 from datetime import timedelta, datetime
@@ -38,7 +39,7 @@ class Gui(MainWindow.Ui_MainWindow):
         self.background_thread_pool = QtCore.QThreadPool()
         self.update_thread = TimedEmitter(2, -1)
         self.email_scheduler_thread = TimedEmitter(30, -1)
-        self.email_scheduler = Scheduling.Scheduler('days', 'email_scheduler', lambda: print('triggered'))
+        self.email_scheduler = Scheduling.Scheduler('days', 'email_scheduler', self.emailing_scheduler_triggered)
 
     def setup_additional(self, main_window):
         main_window.setStyleSheet(qdarkstyle.load_stylesheet_pyqt5())
@@ -70,6 +71,7 @@ class Gui(MainWindow.Ui_MainWindow):
         self.actionAdd_Button.triggered.connect(self.add_button_action_triggered)
         self.actionSetup_Emailing.triggered.connect(self.setup_emailing)
         self.actionSet_Users_Invoices_to_Email.triggered.connect(self.set_users_to_email_triggered)
+        self.actionEMail_Now.triggered.connect(self.emailing_scheduler_triggered)
         self.actionAssign_Buttons.triggered.connect(self.assign_buttons_action_triggered)
         self.load_users()
         self.load_config()
@@ -173,18 +175,32 @@ class Gui(MainWindow.Ui_MainWindow):
                 self.delete_all_users_clocks(user)
 
     def export_all_invoices(self):
-        self.export_invoices(self.users)
-
-    @staticmethod
-    def export_invoices(users):
-        from Exporting import make_invoice_excel, GetFileLocationDialog, get_file_invoice_name, get_invoice_folder_name
+        from Exporting import GetFileLocationDialog, get_invoice_folder_name
         folder_name = get_invoice_folder_name()
         dialog = GetFileLocationDialog(folder_name, "Export Invoices")
         path = dialog.get_save_path()
         make_dir(path)
+        self.export_invoices(self.users, path)
+
+    def export_assigned_invoices(self):
+        path = read_from_config('INVOICE', 'save_path')
+        users = []
+        for user in self.users:
+            if user.email_invoice:
+                users.append(user)
+        return self.export_invoices(users, path)
+
+    def export_invoices(self, users, path):
+        from Exporting import make_invoice_excel, get_file_invoice_name
         if path:
+            invoice_paths = {}
             for user in users:
-                make_invoice_excel(user, Categories.load_categories(user), path=f"{path}/{get_file_invoice_name(user)}")
+                categories = Categories.load_categories(user)
+                invoice_path = f"{path}/{get_file_invoice_name(user)}"
+                make_invoice_excel(user, categories, path=invoice_path)
+                self.handle_delete_clocks(user, True)
+                invoice_paths[user.full_name] = invoice_path
+            return invoice_paths
 
     @staticmethod
     def set_default_invoice_path():
@@ -211,6 +227,32 @@ class Gui(MainWindow.Ui_MainWindow):
         result = self.set_users_to_email_triggered()
         if result:
             add_to_config('EMAIL', 'activated', 1)
+            self.start_email_scheduler()
+
+    def emailing_scheduler_triggered(self):
+        try:
+            msg_template = self.get_msg_template()
+        except (NoOptionError, NoSectionError):
+            error_dialog("Please set email template in order to email you're invoices.")
+            return None
+        try:
+            users_invoices = self.export_assigned_invoices()
+        except(NoSectionError, NoOptionError):
+            error_dialog("Please make sure that everything for emailing is set up before trying to email")
+            return None
+        if len(users_invoices.keys()) <= 0:
+            error_dialog('No users to export set')
+        worker = Worker(self.email_invoices, users_invoices, msg_template)
+        self.background_thread_pool.start(worker)
+
+    def email_invoices(self, users_invoices, msg_template):
+        for user, invoice in users_invoices.items():
+            Emailing.email_invoice(user, invoice, msg_template)
+
+    @staticmethod
+    def get_msg_template():
+        with open(read_from_config('EMAIL', 'template_save_path'), 'r') as f:
+            return f.read()
 
     def load_config(self):
         try:
@@ -304,11 +346,17 @@ class Gui(MainWindow.Ui_MainWindow):
                     self.deactivate_dash_buttons()
             if dialog.email_invoices_changed:
                 if dialog.email_invoices_activated:
-                    self.email_scheduler_thread = TimedEmitter(30, -1)
-                    self.email_scheduler_thread.signals.time_elapsed.connect(self.email_scheduler.check)
-                    self.background_thread_pool.start(self.email_scheduler_thread)
+                    self.start_email_scheduler()
                 else:
-                    self.email_scheduler_thread.canceled = True
+                    self.stop_email_scheduler()
+
+    def start_email_scheduler(self):
+        self.email_scheduler_thread = TimedEmitter(30, -1)
+        self.email_scheduler_thread.signals.time_elapsed.connect(self.email_scheduler.check)
+        self.background_thread_pool.start(self.email_scheduler_thread)
+
+    def stop_email_scheduler(self):
+        self.email_scheduler_thread.canceled = True
 
     def move_users(self, old_directory):
         current_user = self.userBox.currentIndex()
@@ -549,10 +597,18 @@ class Gui(MainWindow.Ui_MainWindow):
         self.set_next_item(self.clockTableWidget.rowCount() - 1, 1, time)
         self.set_next_item(self.clockTableWidget.rowCount() - 1, 2, total_time)
 
-    def delete_all_users_clocks(self, user):
+    @staticmethod
+    def delete_all_users_clocks(user):
         categories = Categories.load_categories(user)
         for clock in [category.clock for category in categories]:
-            delete_clock(clock)
+            if clock.state:
+                rows = clock.load()
+                clock_in_time = rows[-1][0]
+                delete_clock(clock)
+                clock.load()
+                clock.add_clock_in_row(clock_in_time)
+            else:
+                delete_clock(clock)
 
     def reset_current_clocks(self):
         self.delete_all_users_clocks(self.current_user)

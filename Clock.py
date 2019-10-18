@@ -39,9 +39,12 @@ class Clock:
     def clock_in(self):
         date_time = datetime.now()
         self.current_time = date_time
-        self.save_row(self.current_time, "0:00:00", timedelta())
-        self.state = True
+        self.add_clock_in_row(self.current_time)
         return date_time
+
+    def add_clock_in_row(self, clock_in_time):
+        self.save_row(clock_in_time, '0:00:00', timedelta())
+        self.state = True
 
     def clock_out(self):
         date_time = datetime.now()
@@ -106,6 +109,7 @@ class Clock:
 
     def reset(self):
         self.total_monthly_time = timedelta()
+        add_file_if_it_does_not_exist(self.file_path)
 
     def load(self):
         self.reset()

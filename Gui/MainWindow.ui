@@ -327,6 +327,8 @@
     <property name="title">
      <string>Emailing</string>
     </property>
+    <addaction name="actionEMail_Now"/>
+    <addaction name="separator"/>
     <addaction name="actionSetup_Emailing"/>
     <addaction name="separator"/>
     <addaction name="actionSet_Email_Template"/>
@@ -521,6 +523,11 @@
   <action name="actionSet_Users_Invoices_to_Email">
    <property name="text">
     <string>Set Users Invoices to Email</string>
+   </property>
+  </action>
+  <action name="actionEMail_Now">
+   <property name="text">
+    <string>Email Now</string>
    </property>
   </action>
  </widget>

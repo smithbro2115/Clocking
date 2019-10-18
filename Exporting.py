@@ -91,7 +91,7 @@ def make_new_excel_from_template(user, path=None):
 def get_file_invoice_name(user):
     date = datetime.now()
     return f"{user.first_name}_{user.last_name}_Invoice" \
-        f"_{date.strftime('%B')}_{date.year}.xlsx"
+        f"_{date.strftime('%B')}_{date.day}_{date.year}.xlsx"
 
 
 def get_invoice_folder_name():

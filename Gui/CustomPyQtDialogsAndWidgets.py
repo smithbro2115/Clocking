@@ -8,6 +8,7 @@ from Gui.EmailTemplateDialog import Ui_Dialog as EmailTemplateUI
 from Gui.AssignDatesUI import Ui_Dialog as AssignDatesUI
 from Gui.SavePathUI import Ui_Dialog as SavePathUI
 from Gui.UsersToEmailUI import Ui_Dialog as UsersToEmailUI
+from Gui.PleaseWaitDialogUI import Ui_Dialog as PleaseWaitDialogUI
 from Categories import load_categories
 from Exporting import GetFileLocationDialog
 from utils import add_to_config, read_from_config, NoSectionError, NoOptionError, make_dir
@@ -161,8 +162,8 @@ class EmailTemplate(QDialog):
         try:
             path = read_from_config('EMAIL', 'template_save_path')
             with open(path, 'r') as f:
-                recipient, subject, body = get_email_settings_from_text(f.read())
-                self.ui.recipientLineEdit.setText(recipient)
+                recipients, subject, body = get_email_settings_from_text(f.read())
+                self.ui.recipientLineEdit.setText(', '.join(recipients))
                 self.ui.subjectLineEdit.setText(subject)
                 self.ui.textEdit.setText(body)
         except (NoSectionError, NoOptionError):
@@ -270,6 +271,11 @@ class UsersToEmailDialog(DialogTemplate):
             user.email_invoice = self.check_boxes[user.full_name].isChecked()
             user.edit()
         super(UsersToEmailDialog, self).accept()
+
+
+class PleaseWaitDialog(DialogTemplate):
+    def __init__(self):
+        super(PleaseWaitDialog, self).__init__(PleaseWaitDialogUI)
 
 
 class GetFolderLocationDialog(QtWidgets.QFileDialog):
