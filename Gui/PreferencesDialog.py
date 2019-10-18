@@ -64,4 +64,4 @@ class Ui_Dialog(object):
         self.amazonButtonsCheckBox.setText(_translate("Dialog", "Allow Amazon Buttons To Clock In"))
         self.label.setText(_translate("Dialog", "User Save Location:"))
         self.browseUserSaveLoationButton.setText(_translate("Dialog", "..."))
-        self.emailInvoicesCheckBox.setText(_translate("Dialog", "Automatically email invoices"))
+        self.emailInvoicesCheckBox.setText(_translate("Dialog", "Automatically Email Invoices"))

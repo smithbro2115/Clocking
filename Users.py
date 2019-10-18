@@ -57,17 +57,25 @@ class AddUserDialog(QtWidgets.QDialog):
 
 
 class User:
-    def __init__(self, first_name, last_name, phone_number, email, address, default_wage=0.0):
+    def __init__(self, first_name, last_name, phone_number, email, address, default_wage=0.0, **kwargs):
         self.first_name = first_name
         self.last_name = last_name
         self.default_wage = default_wage
         self.phone_number = phone_number
         self.email = email
         self.address = address
+        try:
+            self.email_invoice = kwargs['email_invoice'] == 'True'
+        except KeyError:
+            self.email_invoice = False
         make_dir(self.directory)
         self.file_path = f"{self.directory}/{self.first_name}_{self.last_name}_user.csv"
         add_file_if_it_does_not_exist(self.file_path)
         self.save()
+
+    @property
+    def full_name(self):
+        return f"{self.first_name} {self.last_name}"
 
     @property
     def directory(self):
@@ -81,10 +89,16 @@ class User:
     @property
     def info(self):
         return {'first_name': self.first_name, 'last_name': self.last_name, 'default_wage': self.default_wage,
-                'phone_number': self.phone_number, 'email': self.email, 'address': self.address}
+                'phone_number': self.phone_number, 'email': self.email, 'address': self.address,
+                'email_invoice': self.email_invoice}
 
     def save(self):
         add_dict_to_list_csv_file(self.file_path, self.info, keyword='last_name')
+
+    def edit(self):
+        os.remove(self.file_path)
+        add_file_if_it_does_not_exist(self.file_path)
+        self.save()
 
 
 def add_user():
@@ -152,7 +166,7 @@ def move_user(user, location, old_location):
     return User(**old_info)
 
 
-def edit_user(user):
+def edit_user_dialog(user):
     import shutil
     dialog = AddUserDialog(**user.info)
     if not dialog.result():

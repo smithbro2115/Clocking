@@ -9,7 +9,6 @@ import os
 
 
 invoice_template_path = resource_path("Invoice.xlsx")
-print(invoice_template_path)
 align = styles.Alignment(horizontal='left')
 font = styles.Font(size=12)
 default_company = Company(name='Brinkman Adventures', address='13939 N. Cedarburg Rd. Mequon, WI 53097',

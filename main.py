@@ -8,9 +8,9 @@ import Categories
 from time import sleep
 from platform import system
 from Gui.CustomPyQtDialogsAndWidgets import AssignButtonDialog, TimedEmitter, EmailTemplate, AssignDatesDialog, \
-    SavePathDialog
+    SavePathDialog, UsersToEmailDialog
 from Clock import get_new_date_time, DateAndTimeContextMenu, delete_clock
-from Users import add_user, load_users, delete_user, edit_user, move_user
+from Users import add_user, load_users, delete_user, edit_user_dialog, move_user
 from datetime import timedelta, datetime
 from Preferences import PreferenceDialog
 from configparser import NoSectionError, NoOptionError
@@ -68,6 +68,8 @@ class Gui(MainWindow.Ui_MainWindow):
         self.actionSet_Default_Invoice_Path.triggered.connect(self.set_default_invoice_path)
         self.actionPreferences.triggered.connect(self.preferences_clicked)
         self.actionAdd_Button.triggered.connect(self.add_button_action_triggered)
+        self.actionSetup_Emailing.triggered.connect(self.setup_emailing)
+        self.actionSet_Users_Invoices_to_Email.triggered.connect(self.set_users_to_email_triggered)
         self.actionAssign_Buttons.triggered.connect(self.assign_buttons_action_triggered)
         self.load_users()
         self.load_config()
@@ -190,6 +192,25 @@ class Gui(MainWindow.Ui_MainWindow):
         result = dialog.exec_()
         if result:
             add_to_config('INVOICE', 'save_path', dialog.save_path)
+        return result
+
+    def set_users_to_email_triggered(self):
+        dialog = UsersToEmailDialog(self.users)
+        return dialog.exec_()
+
+    def setup_emailing(self):
+        result = self.set_email_template_clicked()
+        if not result:
+            return None
+        result = self.set_default_invoice_path()
+        if not result:
+            return None
+        result = self.assign_email_dates_clicked()
+        if not result:
+            return None
+        result = self.set_users_to_email_triggered()
+        if result:
+            add_to_config('EMAIL', 'activated', 1)
 
     def load_config(self):
         try:
@@ -239,13 +260,14 @@ class Gui(MainWindow.Ui_MainWindow):
 
     def set_email_template_clicked(self):
         dialog = EmailTemplate()
-        dialog.exec_()
+        return dialog.exec_()
 
     def assign_email_dates_clicked(self):
         dialog = AssignDatesDialog()
         dialog.exec_()
         if dialog.result():
             self.email_scheduler.set_times(*dialog.selected_dates)
+            return True
 
     def clock_table_select_clicked(self, item):
         self.clock_table_edit_triggered(item.row(), item.column(), item.data(QtCore.Qt.UserRole))
@@ -316,7 +338,7 @@ class Gui(MainWindow.Ui_MainWindow):
 
     def edit_user_clicked(self):
         if self.current_user:
-            user = edit_user(self.current_user)
+            user = edit_user_dialog(self.current_user)
             if user:
                 current_cat_index = self.categoryBox.currentIndex()
                 self.reset()

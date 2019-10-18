@@ -94,7 +94,7 @@
    <item row="2" column="0">
     <widget class="QCheckBox" name="emailInvoicesCheckBox">
      <property name="text">
-      <string>Automatically email invoices</string>
+      <string>Automatically Email Invoices</string>
      </property>
     </widget>
    </item>

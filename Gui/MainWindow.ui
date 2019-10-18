@@ -327,8 +327,11 @@
     <property name="title">
      <string>Emailing</string>
     </property>
+    <addaction name="actionSetup_Emailing"/>
+    <addaction name="separator"/>
     <addaction name="actionSet_Email_Template"/>
     <addaction name="actionAssign_Days_to_Send_Emails"/>
+    <addaction name="actionSet_Users_Invoices_to_Email"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
@@ -508,6 +511,16 @@
   <action name="actionSet_Default_Invoice_Path">
    <property name="text">
     <string>Set Default Invoice Path</string>
+   </property>
+  </action>
+  <action name="actionSetup_Emailing">
+   <property name="text">
+    <string>Setup Emailing</string>
+   </property>
+  </action>
+  <action name="actionSet_Users_Invoices_to_Email">
+   <property name="text">
+    <string>Set Users Invoices to Email</string>
    </property>
   </action>
  </widget>

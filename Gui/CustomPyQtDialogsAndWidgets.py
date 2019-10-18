@@ -7,6 +7,7 @@ from Gui.AssignButton import Ui_Dialog as AssignButtonUI
 from Gui.EmailTemplateDialog import Ui_Dialog as EmailTemplateUI
 from Gui.AssignDatesUI import Ui_Dialog as AssignDatesUI
 from Gui.SavePathUI import Ui_Dialog as SavePathUI
+from Gui.UsersToEmailUI import Ui_Dialog as UsersToEmailUI
 from Categories import load_categories
 from Exporting import GetFileLocationDialog
 from utils import add_to_config, read_from_config, NoSectionError, NoOptionError, make_dir
@@ -242,6 +243,33 @@ class SavePathDialog(DialogTemplate):
         if result:
             self.save_path = result
             self.ui.lineEdit.setText(self.save_path)
+
+    def accept(self) -> None:
+        self.save_path = self.ui.lineEdit.text()
+        make_dir(self.save_path)
+        super(SavePathDialog, self).accept()
+
+
+class UsersToEmailDialog(DialogTemplate):
+    def __init__(self, users):
+        super(UsersToEmailDialog, self).__init__(UsersToEmailUI)
+        self.users = users
+        self.check_boxes = {}
+        self.add_users_checkboxes()
+
+    def add_users_checkboxes(self):
+        for user in self.users:
+            check_box = QtWidgets.QCheckBox()
+            check_box.setText(user.full_name)
+            check_box.setChecked(user.email_invoice)
+            self.check_boxes[user.full_name] = check_box
+            self.ui.usersVerticalLayout.addWidget(check_box)
+
+    def accept(self) -> None:
+        for user in self.users:
+            user.email_invoice = self.check_boxes[user.full_name].isChecked()
+            user.edit()
+        super(UsersToEmailDialog, self).accept()
 
 
 class GetFolderLocationDialog(QtWidgets.QFileDialog):
