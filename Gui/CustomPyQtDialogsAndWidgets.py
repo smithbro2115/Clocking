@@ -214,6 +214,7 @@ class AssignDatesDialog(DialogTemplate):
         self.ui.tableWidget.verticalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
         self.set_items_values()
         self.selected_dates = []
+        self.compensate = False
 
     def set_items_values(self):
         for row in range(self.ui.tableWidget.rowCount()):
@@ -223,6 +224,7 @@ class AssignDatesDialog(DialogTemplate):
 
     def accept(self) -> None:
         self.selected_dates = [item.data(8) for item in self.ui.tableWidget.selectedItems()]
+        self.compensate = self.ui.compensateCheckBox.isChecked()
         super(AssignDatesDialog, self).accept()
 
 

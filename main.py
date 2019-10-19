@@ -309,6 +309,7 @@ class Gui(MainWindow.Ui_MainWindow):
         dialog.exec_()
         if dialog.result():
             self.email_scheduler.set_times(*dialog.selected_dates)
+            self.email_scheduler.compensate = dialog.compensate
             return True
 
     def clock_table_select_clicked(self, item):

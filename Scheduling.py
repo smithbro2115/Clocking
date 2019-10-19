@@ -2,25 +2,45 @@ import datetime
 import LocalFileHandling
 
 
+# TODO Add compensating for later days of the month
+
+
 class Scheduler:
     def __init__(self, scheduler_type, name, function):
         self.scheduler_type = scheduler_type
         self.name = name
         self.function = function
         self.path = f'{LocalFileHandling.get_app_data_folder("")}/{name}.yaml'
+        self.config_path = f'{LocalFileHandling.get_app_data_folder("")}/{name}_config.yaml'
+        try:
+            self._compensate = self.read_from_file(self.config_path)
+        except FileNotFoundError:
+            self._compensate = False
+        self.compensate = self._compensate
+
+    @property
+    def compensate(self):
+        return self._compensate
+
+    @compensate.setter
+    def compensate(self, value):
+        self.write_to_file(value, self.config_path)
+        self._compensate = value
 
     def set_times(self, *days):
         if self.scheduler_type == 'days':
             days_with_last_used = {}
             for day in days:
                 days_with_last_used[day] = 0
-            self.write_to_file(days_with_last_used)
+            self.write_to_file(days_with_last_used, self.path)
 
-    def write_to_file(self, value):
-        LocalFileHandling.save_to_yaml(self.path, value)
+    @staticmethod
+    def write_to_file(value, path):
+        LocalFileHandling.save_to_yaml(path, value)
 
-    def read_from_file(self):
-        return LocalFileHandling.load_from_yaml(self.path)
+    @staticmethod
+    def read_from_file(path):
+        return LocalFileHandling.load_from_yaml(path)
     #
     # def set_last_used(self, day, days):
     #     days[day] = datetime.datetime.now()
@@ -29,7 +49,7 @@ class Scheduler:
 
     def check(self):
         try:
-            days = self.read_from_file()
+            days = self.read_from_file(self.path)
         except FileNotFoundError:
             pass
         else:
@@ -38,14 +58,38 @@ class Scheduler:
             for day, last_sent in days.items():
                 if last_sent == 0:
                     new_days[day] = current_time
-                elif current_time.day >= day and (current_time-last_sent).days > (current_time.day - day):
-                    LocalFileHandling.write_to_cache('Email', 'last_sent', datetime.datetime)
-                    new_days = self.get_new_dict_with_all_dates_now(days, current_time)
-                    self.function()
-                    break
                 else:
-                    new_days[day] = last_sent
-            self.write_to_file(new_days)
+                    condition, current_time = self.check_condition(day, current_time, last_sent)
+                    if condition:
+                        new_days = self.get_new_dict_with_all_dates_now(days, current_time)
+                        self.function()
+                        break
+                    else:
+                        new_days[day] = last_sent
+            self.write_to_file(new_days, self.path)
+
+    def check_condition(self, day, current_time, last_sent):
+        conditions = []
+        if self.compensate:
+            current_time = self.weekend_condition(day, current_time)
+        conditions.append(self.passed_day_condition(day, current_time))
+        conditions.append(self.already_sent_condition(day, current_time, last_sent))
+        return False not in conditions, current_time
+
+    @staticmethod
+    def weekend_condition(day, current_time: datetime.datetime):
+        new_time = datetime.datetime(current_time.year, current_time.month, day, current_time.hour, current_time.minute)
+        if new_time.weekday() == 5 or new_time.weekday() == 6 and current_time.weekday() == 4:
+            return new_time
+        return current_time
+
+    @staticmethod
+    def passed_day_condition(day, current_time: datetime.datetime):
+        return current_time.day >= day
+
+    @staticmethod
+    def already_sent_condition(day, current_time: datetime.datetime, last_sent):
+        return (current_time - last_sent).days > (current_time.day - day)
 
     @staticmethod
     def get_new_dict_with_all_dates_now(days, date_time):
