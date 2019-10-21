@@ -50,6 +50,7 @@ class Scheduler:
     def check(self):
         try:
             days = self.read_from_file(self.path)
+            days[32] = datetime.datetime(2019, 9, 20)
         except FileNotFoundError:
             pass
         else:
@@ -70,11 +71,22 @@ class Scheduler:
 
     def check_condition(self, day, current_time, last_sent):
         conditions = []
+        day = self.check_if_day_is_out_of_range(day)
+        print(day)
         if self.compensate:
             current_time = self.weekend_condition(day, current_time)
         conditions.append(self.passed_day_condition(day, current_time))
         conditions.append(self.already_sent_condition(day, current_time, last_sent))
         return False not in conditions, current_time
+
+    @staticmethod
+    def check_if_day_is_out_of_range(day):
+        current_date = datetime.datetime.now()
+        try:
+            datetime.datetime(current_date.year, current_date.month, day)
+            return day
+        except ValueError:
+            return last_day_of_month(current_date).day
 
     @staticmethod
     def weekend_condition(day, current_time: datetime.datetime):
@@ -99,6 +111,7 @@ class Scheduler:
         return new_dict
 
 
-class SchedulerEvent:
-    def __init__(self, date_time):
-        self.date_time = date_time
+def last_day_of_month(any_day):
+    next_month = any_day.replace(day=28) + datetime.timedelta(days=4)
+    return next_month - datetime.timedelta(days=next_month.day)
+

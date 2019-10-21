@@ -85,8 +85,7 @@ class Gui(MainWindow.Ui_MainWindow):
         self.userBox.currentIndexChanged.connect(self.user_box_changed)
         self.categoryBox.currentIndexChanged.connect(self.category_box_changed)
         self.addUserButton.clicked.connect(self.add_user_button_clicked)
-        self.globalRadioButton.clicked.connect(lambda:
-                                               self.set_monthly_time_and_income(self.current_clock.total_monthly_time))
+        self.globalRadioButton.clicked.connect(self.global_radio_button_clicked)
         self.try_to_recall_last_used_settings()
         self.update_thread.signals.time_elapsed.connect(self.update_table)
         self.email_scheduler_thread.signals.time_elapsed.connect(self.email_scheduler.check)
@@ -522,6 +521,12 @@ class Gui(MainWindow.Ui_MainWindow):
             self.clockButton.setText('Clock Out')
         else:
             self.clockButton.setText('Clock In')
+
+    def global_radio_button_clicked(self):
+        try:
+            self.set_monthly_time_and_income(self.current_clock.total_monthly_time)
+        except AttributeError:
+            pass
 
     def set_monthly_time_and_income(self, total):
         if self.globalRadioButton.isChecked():

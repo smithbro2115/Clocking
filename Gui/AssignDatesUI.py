@@ -1,14 +1,12 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'C:\Users\Josh\PycharmProjects\Clocking\Gui\AssignDatesUI.ui'
+# Form implementation generated from reading ui file 'D:\Programming\Clocking\Gui\AssignDatesUI.ui'
 #
-# Created by: PyQt5 UI code generator 5.13.1
+# Created by: PyQt5 UI code generator 5.11.3
 #
 # WARNING! All changes made in this file will be lost!
 
-
 from PyQt5 import QtCore, QtGui, QtWidgets
-
 
 class Ui_Dialog(object):
     def setupUi(self, Dialog):
@@ -37,7 +35,7 @@ class Ui_Dialog(object):
         self.tableWidget.setCornerButtonEnabled(False)
         self.tableWidget.setObjectName("tableWidget")
         self.tableWidget.setColumnCount(7)
-        self.tableWidget.setRowCount(4)
+        self.tableWidget.setRowCount(5)
         item = QtWidgets.QTableWidgetItem()
         self.tableWidget.setVerticalHeaderItem(0, item)
         item = QtWidgets.QTableWidgetItem()
@@ -46,6 +44,8 @@ class Ui_Dialog(object):
         self.tableWidget.setVerticalHeaderItem(2, item)
         item = QtWidgets.QTableWidgetItem()
         self.tableWidget.setVerticalHeaderItem(3, item)
+        item = QtWidgets.QTableWidgetItem()
+        self.tableWidget.setVerticalHeaderItem(4, item)
         item = QtWidgets.QTableWidgetItem()
         self.tableWidget.setHorizontalHeaderItem(0, item)
         item = QtWidgets.QTableWidgetItem()
@@ -116,6 +116,24 @@ class Ui_Dialog(object):
         self.tableWidget.setItem(3, 5, item)
         item = QtWidgets.QTableWidgetItem()
         self.tableWidget.setItem(3, 6, item)
+        item = QtWidgets.QTableWidgetItem()
+        self.tableWidget.setItem(4, 0, item)
+        item = QtWidgets.QTableWidgetItem()
+        self.tableWidget.setItem(4, 1, item)
+        item = QtWidgets.QTableWidgetItem()
+        self.tableWidget.setItem(4, 2, item)
+        item = QtWidgets.QTableWidgetItem()
+        item.setFlags(QtCore.Qt.ItemIsDragEnabled|QtCore.Qt.ItemIsUserCheckable|QtCore.Qt.ItemIsEnabled)
+        self.tableWidget.setItem(4, 3, item)
+        item = QtWidgets.QTableWidgetItem()
+        item.setFlags(QtCore.Qt.ItemIsDragEnabled|QtCore.Qt.ItemIsUserCheckable|QtCore.Qt.ItemIsEnabled)
+        self.tableWidget.setItem(4, 4, item)
+        item = QtWidgets.QTableWidgetItem()
+        item.setFlags(QtCore.Qt.ItemIsDragEnabled|QtCore.Qt.ItemIsUserCheckable|QtCore.Qt.ItemIsEnabled)
+        self.tableWidget.setItem(4, 5, item)
+        item = QtWidgets.QTableWidgetItem()
+        item.setFlags(QtCore.Qt.ItemIsDragEnabled|QtCore.Qt.ItemIsUserCheckable|QtCore.Qt.ItemIsEnabled)
+        self.tableWidget.setItem(4, 6, item)
         self.tableWidget.horizontalHeader().setVisible(False)
         self.tableWidget.horizontalHeader().setCascadingSectionResizes(False)
         self.tableWidget.horizontalHeader().setHighlightSections(True)
@@ -148,6 +166,8 @@ class Ui_Dialog(object):
         item.setText(_translate("Dialog", "2"))
         item = self.tableWidget.verticalHeaderItem(3)
         item.setText(_translate("Dialog", "3"))
+        item = self.tableWidget.verticalHeaderItem(4)
+        item.setText(_translate("Dialog", "4"))
         item = self.tableWidget.horizontalHeaderItem(0)
         item.setText(_translate("Dialog", "New Column"))
         item = self.tableWidget.horizontalHeaderItem(1)
@@ -220,5 +240,12 @@ class Ui_Dialog(object):
         item.setText(_translate("Dialog", "27th"))
         item = self.tableWidget.item(3, 6)
         item.setText(_translate("Dialog", "28th"))
+        item = self.tableWidget.item(4, 0)
+        item.setText(_translate("Dialog", "29th"))
+        item = self.tableWidget.item(4, 1)
+        item.setText(_translate("Dialog", "30th"))
+        item = self.tableWidget.item(4, 2)
+        item.setText(_translate("Dialog", "31st"))
         self.tableWidget.setSortingEnabled(__sortingEnabled)
         self.label.setText(_translate("Dialog", "Select all dates on which you wish to send your invoices"))
+
