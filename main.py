@@ -9,7 +9,7 @@ from time import sleep
 from platform import system
 import Emailing
 from Gui.CustomPyQtDialogsAndWidgets import AssignButtonDialog, TimedEmitter, EmailTemplate, AssignDatesDialog, \
-    SavePathDialog, UsersToEmailDialog, PleaseWaitDialog
+    SavePathDialog, UsersToEmailDialog, PleaseWaitDialog, CompanyDialog
 from Clock import get_new_date_time, DateAndTimeContextMenu, delete_clock
 from Users import add_user, load_users, delete_user, edit_user_dialog, move_user
 from datetime import timedelta, datetime
@@ -69,6 +69,7 @@ class Gui(MainWindow.Ui_MainWindow):
         self.actionSet_Default_Invoice_Path.triggered.connect(self.set_default_invoice_path)
         self.actionPreferences.triggered.connect(self.preferences_clicked)
         self.actionAdd_Button.triggered.connect(self.add_button_action_triggered)
+        self.actionSet_Company.triggered.connect(self.set_company_triggered)
         self.actionSetup_Emailing.triggered.connect(self.setup_emailing)
         self.actionSet_Users_Invoices_to_Email.triggered.connect(self.set_users_to_email_triggered)
         self.actionEMail_Now.triggered.connect(self.emailing_scheduler_triggered)
@@ -227,6 +228,10 @@ class Gui(MainWindow.Ui_MainWindow):
         if result:
             add_to_config('EMAIL', 'activated', 1)
             self.start_email_scheduler()
+
+    def set_company_triggered(self):
+        dialog = CompanyDialog()
+        dialog.exec_()
 
     def emailing_scheduler_triggered(self):
         try:

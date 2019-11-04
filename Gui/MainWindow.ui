@@ -321,6 +321,8 @@
     <addaction name="actionEdit_Category"/>
     <addaction name="actionDelete_Category"/>
     <addaction name="separator"/>
+    <addaction name="actionSet_Company"/>
+    <addaction name="separator"/>
     <addaction name="actionClock"/>
    </widget>
    <widget class="QMenu" name="menuEmailing">
@@ -528,6 +530,11 @@
   <action name="actionEMail_Now">
    <property name="text">
     <string>Email Now</string>
+   </property>
+  </action>
+  <action name="actionSet_Company">
+   <property name="text">
+    <string>Set Company</string>
    </property>
   </action>
  </widget>

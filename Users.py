@@ -19,6 +19,7 @@ class AddUserDialog(QtWidgets.QDialog):
 		self.ui.firstNameLineEdit.setFocus()
 		self.required_fields = [self.ui.firstNameLineEdit, self.ui.lastNameLineEdit, self.ui.addressTextEdit,
 								self.ui.phoneLineEdit, self.ui.emailLineEdit]
+		self.fields_to_check_for_bad_characters = [self.ui.firstNameLineEdit, self.ui.lastNameLineEdit]
 		self.setStyleSheet(qdarkstyle.load_stylesheet_pyqt5())
 		self.ui.firstNameLineEdit.setText(first_name)
 		self.ui.lastNameLineEdit.setText(last_name)
@@ -48,9 +49,10 @@ class AddUserDialog(QtWidgets.QDialog):
 	def check_for_bad_characters(self):
 		bad_letters = ['/', '\\']
 		for bad in bad_letters:
-			if bad in (self.ui.firstNameLineEdit.text() or self.ui.lastNameLineEdit.text()):
-				cannot_except_dialog()
-				return True
+			for field in self.fields_to_check_for_bad_characters:
+				if bad in field.text():
+					cannot_except_dialog()
+					return True
 		return False
 
 	def accept(self):

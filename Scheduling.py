@@ -50,7 +50,6 @@ class Scheduler:
     def check(self):
         try:
             days = self.read_from_file(self.path)
-            days[32] = datetime.datetime(2019, 9, 20)
         except FileNotFoundError:
             pass
         else:
@@ -72,7 +71,6 @@ class Scheduler:
     def check_condition(self, day, current_time, last_sent):
         conditions = []
         day = self.check_if_day_is_out_of_range(day)
-        print(day)
         if self.compensate:
             current_time = self.weekend_condition(day, current_time)
         conditions.append(self.passed_day_condition(day, current_time))

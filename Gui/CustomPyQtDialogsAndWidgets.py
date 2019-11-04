@@ -9,9 +9,10 @@ from Gui.AssignDatesUI import Ui_Dialog as AssignDatesUI
 from Gui.SavePathUI import Ui_Dialog as SavePathUI
 from Gui.UsersToEmailUI import Ui_Dialog as UsersToEmailUI
 from Gui.PleaseWaitDialogUI import Ui_Dialog as PleaseWaitDialogUI
+from Gui.SetCompanyUI import Ui_Dialog as SetCompanyUI
 from Categories import load_categories
 from Exporting import GetFileLocationDialog
-from utils import add_to_config, read_from_config, NoSectionError, NoOptionError, make_dir
+from utils import add_to_config, read_from_config, NoSectionError, NoOptionError, make_dir, cannot_except_dialog
 from LocalFileHandling import get_app_data_folder, load_from_yaml
 import os
 from Emailing import get_email_settings_from_text
@@ -107,6 +108,42 @@ class TimedEmitter(QRunnable):
             self.signals.time_elapsed.emit()
             self.times_emitted += 1
         self.signals.finished.emit()
+        
+        
+class RequiredFieldsDialog(DialogTemplate):
+    def __init__(self, ui):
+        super(RequiredFieldsDialog, self).__init__(ui)
+        self.fields_to_check_for_bad_characters = []
+        self.required_fields = []
+
+    @staticmethod
+    def check_if_filled(fields):
+        try:
+            for field in fields:
+                try:
+                    text = field.text()
+                except AttributeError:
+                    text = field.toPlainText()
+                if not text:
+                    return False
+            return True
+        except TypeError:
+            if not fields.text():
+                return False
+            return True
+
+    def check_for_bad_characters(self):
+        bad_letters = ['/', '\\']
+        for bad in bad_letters:
+            for field in self.fields_to_check_for_bad_characters:
+                if bad in field.text():
+                    cannot_except_dialog()
+                    return True
+        return False
+
+    def accept(self):
+        if self.check_if_filled(self.required_fields) and not self.check_for_bad_characters():
+            super(RequiredFieldsDialog, self).accept()
 
 
 class ChildDraggableTreeWidget(QTreeWidget):
@@ -273,6 +310,19 @@ class UsersToEmailDialog(DialogTemplate):
             user.email_invoice = self.check_boxes[user.full_name].isChecked()
             user.edit()
         super(UsersToEmailDialog, self).accept()
+        
+        
+class CompanyDialog(RequiredFieldsDialog):
+    def __init__(self, name='', phone_number='', email='', address='', motto=''):
+        super(CompanyDialog, self).__init__(SetCompanyUI)
+        self.ui.nameLineEdit.setText(name)
+        self.ui.phoneLineEdit.setText(phone_number)
+        self.ui.emailLineEdit.setText(email)
+        self.ui.addressPlainTextEdit.setPlainText(address)
+        self.ui.mottoLineEdit.setText(motto)
+        self.required_fields = [self.ui.nameLineEdit, self.ui.phoneLineEdit, self.ui.emailLineEdit,
+                                self.ui.addressPlainTextEdit]
+        self.fields_to_check_for_bad_characters = [self.ui.nameLineEdit]
 
 
 class PleaseWaitDialog(DialogTemplate):

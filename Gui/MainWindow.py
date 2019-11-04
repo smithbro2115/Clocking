@@ -1,14 +1,12 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'C:\Users\Josh\PycharmProjects\Clocking\Gui\MainWindow.ui'
+# Form implementation generated from reading ui file 'D:\Programming\Clocking\Gui\MainWindow.ui'
 #
-# Created by: PyQt5 UI code generator 5.13.1
+# Created by: PyQt5 UI code generator 5.11.3
 #
 # WARNING! All changes made in this file will be lost!
 
-
 from PyQt5 import QtCore, QtGui, QtWidgets
-
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -247,6 +245,8 @@ class Ui_MainWindow(object):
         self.actionSet_Users_Invoices_to_Email.setObjectName("actionSet_Users_Invoices_to_Email")
         self.actionEMail_Now = QtWidgets.QAction(MainWindow)
         self.actionEMail_Now.setObjectName("actionEMail_Now")
+        self.actionSet_Company = QtWidgets.QAction(MainWindow)
+        self.actionSet_Company.setObjectName("actionSet_Company")
         self.menuFile.addAction(self.actionExport_Invoice)
         self.menuFile.addAction(self.actionExport_All_Invoices)
         self.menuFile.addAction(self.actionSet_Default_Invoice_Path)
@@ -261,6 +261,8 @@ class Ui_MainWindow(object):
         self.menuEdit.addAction(self.actionAdd_Category_2)
         self.menuEdit.addAction(self.actionEdit_Category)
         self.menuEdit.addAction(self.actionDelete_Category)
+        self.menuEdit.addSeparator()
+        self.menuEdit.addAction(self.actionSet_Company)
         self.menuEdit.addSeparator()
         self.menuEdit.addAction(self.actionClock)
         self.menuEmailing.addAction(self.actionEMail_Now)
@@ -331,3 +333,5 @@ class Ui_MainWindow(object):
         self.actionSetup_Emailing.setText(_translate("MainWindow", "Setup Emailing"))
         self.actionSet_Users_Invoices_to_Email.setText(_translate("MainWindow", "Set Users Invoices to Email"))
         self.actionEMail_Now.setText(_translate("MainWindow", "Email Now"))
+        self.actionSet_Company.setText(_translate("MainWindow", "Set Company"))
+
