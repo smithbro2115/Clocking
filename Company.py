@@ -1,4 +1,6 @@
-from LocalFileHandling import get_app_data_folder
+from LocalFileHandling import get_app_data_folder, add_dict_to_list_csv_file, add_file_if_it_does_not_exist, \
+    get_dicts_from_csv
+import os
 
 
 class Company:
@@ -10,3 +12,26 @@ class Company:
         self.motto = motto
         self.directory = get_app_data_folder('Companies')
         self.file_path = f"{self.directory}/{name}_company.csv"
+
+    @property
+    def info(self):
+        return {'name': self.name, 'phone_number': self.phone_number, 'email': self.email, 'address': self.address,
+                'motto': self.motto}
+
+    def save(self):
+        add_dict_to_list_csv_file(self.file_path, self.info, keyword='name')
+
+    def edit(self):
+        os.remove(self.file_path)
+        add_file_if_it_does_not_exist(self.file_path)
+        self.save()
+
+
+def load_companies(path):
+    add_file_if_it_does_not_exist(path)
+    raw_companies = get_dicts_from_csv(path)
+    companies = []
+    for raw_company in raw_companies:
+        company = Company(**raw_company)
+        companies.append(company)
+    return companies
