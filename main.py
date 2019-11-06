@@ -105,6 +105,14 @@ class Gui(MainWindow.Ui_MainWindow):
         self.update_thread.canceled = True
         self.email_scheduler_thread.canceled = True
 
+    @property
+    def invoice_save_path(self):
+        try:
+            return read_from_config('INVOICE', 'save_path')
+        except (NoOptionError, NoSectionError):
+            add_to_config('INVOICE', 'save_path', f"{get_app_data_folder('Invoices')}/")
+            return f"{get_app_data_folder('Invoices')}/"
+
     def try_to_recall_last_used_settings(self):
         try:
             user_name = read_from_cache('LAST_USED', 'user')
@@ -160,7 +168,9 @@ class Gui(MainWindow.Ui_MainWindow):
     def export_invoice_triggered(self, user, categories):
         from Exporting import make_invoice_excel, GetFileLocationDialog, get_file_invoice_name
         if self.current_category:
-            file_location_dialog = GetFileLocationDialog(get_file_invoice_name(user), caption='Export Invoice')
+            file_location_dialog = GetFileLocationDialog(get_file_invoice_name(user),
+                                                         default_location=self.invoice_save_path,
+                                                         caption='Export Invoice')
             result = file_location_dialog.get_save_path()
             if result:
                 delete_clocks_dialog = ChoiceDialog('Do you want to reset all the clocks for this user?', 'EXPORTING',
@@ -232,11 +242,15 @@ class Gui(MainWindow.Ui_MainWindow):
             self.start_email_scheduler()
 
     def set_company_triggered(self):
-        company = Company.load_companies(self.company_path)[0]
-        dialog = CompanyDialog(**company.info)
+        try:
+            company = Company.load_companies(self.company_path)[0]
+            dialog = CompanyDialog(**company.info)
+        except IndexError:
+            dialog = CompanyDialog()
         result = dialog.exec_()
         if result:
-            new_company = Company.Company(dialog.)
+            company = Company.make_company_from_dialog(dialog)
+            company.save()
 
     def emailing_scheduler_triggered(self):
         try:
