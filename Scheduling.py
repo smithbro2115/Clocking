@@ -2,9 +2,6 @@ import datetime
 import LocalFileHandling
 
 
-# TODO Add compensating for later days of the month
-
-
 class Scheduler:
     def __init__(self, scheduler_type, name, function):
         self.scheduler_type = scheduler_type

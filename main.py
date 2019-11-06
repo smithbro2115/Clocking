@@ -108,7 +108,7 @@ class Gui(MainWindow.Ui_MainWindow):
     @property
     def invoice_save_path(self):
         try:
-            return read_from_config('INVOICE', 'save_path')
+            return f"{read_from_config('INVOICE', 'save_path')}/"
         except (NoOptionError, NoSectionError):
             add_to_config('INVOICE', 'save_path', f"{get_app_data_folder('Invoices')}/")
             return f"{get_app_data_folder('Invoices')}/"

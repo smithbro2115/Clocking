@@ -11,10 +11,6 @@ import os
 invoice_template_path = resource_path("Invoice.xlsx")
 align = styles.Alignment(horizontal='left', vertical='top', wrap_text=True)
 font = styles.Font(size=12)
-try:
-    default_company = load_companies(f"{get_app_data_folder('Companies')}/company_company.csv")[0]
-except FileNotFoundError:
-    default_company = Company()
 
 
 def make_invoice_excel(user, categories, path=None):
@@ -22,10 +18,17 @@ def make_invoice_excel(user, categories, path=None):
     wb = openpyxl.load_workbook(excel_path)
     sheet = wb.active
     add_user_info_to_invoice(sheet, user)
-    add_company_info_to_invoice(sheet, default_company)
+    add_company_info_to_invoice(sheet, get_default_company())
     for category in categories:
         add_category_to_invoice(category, sheet)
     wb.save(excel_path)
+
+
+def get_default_company():
+    try:
+        return load_companies(f"{get_app_data_folder('Companies')}/company_company.csv")[0]
+    except (FileNotFoundError, IndexError):
+        return Company()
 
 
 def unmerge_cells(sheet):
