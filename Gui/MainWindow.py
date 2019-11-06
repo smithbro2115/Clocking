@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'D:\Programming\Clocking\Gui\MainWindow.ui'
+# Form implementation generated from reading ui file 'C:\Users\Josh\PycharmProjects\Clocking\Gui\MainWindow.ui'
 #
-# Created by: PyQt5 UI code generator 5.11.3
+# Created by: PyQt5 UI code generator 5.13.1
 #
 # WARNING! All changes made in this file will be lost!
 
+
 from PyQt5 import QtCore, QtGui, QtWidgets
+
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -330,8 +332,7 @@ class Ui_MainWindow(object):
         self.actionSet_Email_Template.setText(_translate("MainWindow", "Set Email Template"))
         self.actionAssign_Days_to_Send_Emails.setText(_translate("MainWindow", "Assign Days to Send Emails"))
         self.actionSet_Default_Invoice_Path.setText(_translate("MainWindow", "Set Default Invoice Path"))
-        self.actionSetup_Emailing.setText(_translate("MainWindow", "Setup Emailing"))
+        self.actionSetup_Emailing.setText(_translate("MainWindow", "Set Emailing"))
         self.actionSet_Users_Invoices_to_Email.setText(_translate("MainWindow", "Set Users Invoices to Email"))
         self.actionEMail_Now.setText(_translate("MainWindow", "Email Now"))
         self.actionSet_Company.setText(_translate("MainWindow", "Set Company"))
-

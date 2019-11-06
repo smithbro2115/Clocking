@@ -519,7 +519,7 @@
   </action>
   <action name="actionSetup_Emailing">
    <property name="text">
-    <string>Setup Emailing</string>
+    <string>Set Emailing</string>
    </property>
   </action>
   <action name="actionSet_Users_Invoices_to_Email">
