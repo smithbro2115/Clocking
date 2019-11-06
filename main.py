@@ -99,7 +99,7 @@ class Gui(MainWindow.Ui_MainWindow):
         except (NoOptionError, NoSectionError):
             pass
         if system() == 'Darwin':
-            self.menubar.removeAction(self.menubar.actions()[2])
+            self.menubar.removeAction(self.menubar.actions()[3])
 
     def __del__(self):
         self.update_thread.canceled = True
