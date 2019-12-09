@@ -30,7 +30,7 @@ exe = EXE(pyz,
           upx=True,
           upx_exclude=[],
           runtime_tmpdir=None,
-          console=False, icon="clock_icon.ico" )
+          console=True, icon="clock_icon.ico" )
 app = BUNDLE(exe,
              name='Clocking.app',
              icon='clock_icon.icns',

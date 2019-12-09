@@ -206,7 +206,7 @@ class EmailTemplate(QDialog):
         except (NoSectionError, NoOptionError):
             pass
         except FileNotFoundError:
-            add_to_config('EMAIL', 'template_save_path', get_app_data_folder(''))
+            add_to_config('EMAIL', 'template_save_path', f"{get_app_data_folder('')}/email_template.txt")
         self.ui.recipientLineEdit.textChanged.connect(self.verify_fields)
         self.ui.subjectLineEdit.textChanged.connect(self.verify_fields)
         self.ui.textEdit.textChanged.connect(self.verify_fields)

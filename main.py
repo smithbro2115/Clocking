@@ -255,16 +255,16 @@ class Gui(MainWindow.Ui_MainWindow):
     def emailing_scheduler_triggered(self):
         try:
             msg_template = self.get_msg_template()
-        except (NoOptionError, NoSectionError):
+        except (NoOptionError, NoSectionError, FileNotFoundError):
             error_dialog("Please set email template in order to email you're invoices.")
             return None
         try:
             users_invoices = self.export_assigned_invoices()
-        except(NoSectionError, NoOptionError):
-            error_dialog("Please make sure that everything for emailing is set up before trying to email")
+        except(NoSectionError, NoOptionError, FileNotFoundError):
+            error_dialog("Please make sure that everything for emailing is set up before trying to email.")
             return None
         if len(users_invoices.keys()) <= 0:
-            error_dialog('No users to export set')
+            error_dialog('No users are set to export.')
         worker = Worker(self.email_invoices, users_invoices, msg_template)
         self.background_thread_pool.start(worker)
 
