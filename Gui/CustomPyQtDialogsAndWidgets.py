@@ -39,7 +39,6 @@ class AssignButtonDialog(DialogTemplate):
         self.ui.buttonTreeWidget.setHeaderHidden(True)
         self.populate_button_tree(buttons)
         self.populate_tree(self.ui.categoryTreeWidget, self.make_users_dict(users))
-        self.ui.removeCategoryPushButton.setEnabled(False)
         self.new_button_dict = {}
 
     def accept(self):

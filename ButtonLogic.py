@@ -28,12 +28,10 @@ class ButtonListener:
 				self.send_notification(category.clock.state, clock_time)
 		except AttributeError:
 			pass
-		except TypeError:
-			self.notify('Error with Clocking', "That Category may no longer exist, or you may be "
-											   "disconnected from your drive")
 
 	def get_assigned_category(self, address) -> Category:
 		button_assignments = self.get_button_assignments()
+		print(button_assignments)
 		try:
 			user_name, category_name = button_assignments[address]
 			user = load_user(get_user_path_from_user_name(user_name))[0]

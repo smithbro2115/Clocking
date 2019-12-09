@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'Z:\Employee Folders\Josh\Programs\Clocking\Gui\AssignButton.ui'
+# Form implementation generated from reading ui file 'C:\Users\Josh\PycharmProjects\Clocking\Gui\AssignButton.ui'
 #
-# Created by: PyQt5 UI code generator 5.11.3
+# Created by: PyQt5 UI code generator 5.13.1
 #
 # WARNING! All changes made in this file will be lost!
 
+
 from PyQt5 import QtCore, QtGui, QtWidgets
+
 
 class Ui_Dialog(object):
     def setupUi(self, Dialog):
@@ -41,12 +43,6 @@ class Ui_Dialog(object):
         self.gridLayout_2.setHorizontalSpacing(6)
         self.gridLayout_2.setVerticalSpacing(0)
         self.gridLayout_2.setObjectName("gridLayout_2")
-        self.addButtonPushButton = QtWidgets.QPushButton(Dialog)
-        self.addButtonPushButton.setObjectName("addButtonPushButton")
-        self.gridLayout_2.addWidget(self.addButtonPushButton, 0, 0, 1, 1)
-        self.removeCategoryPushButton = QtWidgets.QPushButton(Dialog)
-        self.removeCategoryPushButton.setObjectName("removeCategoryPushButton")
-        self.gridLayout_2.addWidget(self.removeCategoryPushButton, 0, 1, 1, 1)
         self.gridLayout.addLayout(self.gridLayout_2, 2, 0, 1, 1)
         self.widget = QtWidgets.QWidget(Dialog)
         self.widget.setObjectName("widget")
@@ -65,6 +61,3 @@ class Ui_Dialog(object):
         Dialog.setWindowTitle(_translate("Dialog", "Assign Buttons"))
         self.label.setText(_translate("Dialog", "Buttons"))
         self.label_2.setText(_translate("Dialog", "Users"))
-        self.addButtonPushButton.setText(_translate("Dialog", "Add Button"))
-        self.removeCategoryPushButton.setText(_translate("Dialog", "Remove Category"))
-
