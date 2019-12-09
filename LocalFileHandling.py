@@ -1,7 +1,9 @@
 import pickle
 import os
 import csv
+import yaml
 import configparser
+from platform import system
 from ast import literal_eval
 
 
@@ -107,6 +109,16 @@ def delete_dict_from_csv(path, dict_to_delete):
     return False
 
 
+def load_from_yaml(path):
+    with open(path, 'r') as f:
+        return yaml.load(f, Loader=yaml.FullLoader)
+
+
+def save_to_yaml(path, value):
+    with open(path, 'w') as f:
+        yaml.dump(value, f)
+
+
 def add_to_list_if_name_not_duplicate(dict_list, new_dict, keyword):
     for existing in dict_list:
         if existing[keyword] == new_dict[keyword]:
@@ -142,12 +154,7 @@ def make_folder_if_it_does_not_exist(src, folder):
 
 def add_to_config(category, option, value):
     config_path = f"{get_app_data_folder('')}/config.ini"
-    config = configparser.ConfigParser()
-    try_to_add_section_to_config(config, category)
-    config.read(config_path)
-    config.set(category, str(option), str(value))
-    with open(config_path, 'w') as config_file:
-        config.write(config_file)
+    write_to_ini_file(category, option, value, config_path)
 
 
 def try_to_add_section_to_config(ini_file, section):
@@ -159,26 +166,32 @@ def try_to_add_section_to_config(ini_file, section):
 
 def read_from_config(category, option):
     config_path = f"{get_app_data_folder('')}/config.ini"
-    config = configparser.ConfigParser()
-    config.read(config_path)
-    return config.get(category, option)
+    return read_from_ini_file(category, option, config_path)
+
+
+def write_to_ini_file(category, option, value, path):
+    cache = configparser.ConfigParser()
+    try_to_add_section_to_config(cache, category)
+    cache.read(path)
+    cache.set(category, str(option), str(value))
+    with open(path, 'w') as cache_file:
+        cache.write(cache_file)
+
+
+def read_from_ini_file(category, option, path):
+    cache = configparser.ConfigParser()
+    cache.read(path)
+    return cache.get(category, option)
 
 
 def write_to_cache(category, option, value):
     cache_path = f"{get_app_data_folder('')}/cache.ini"
-    cache = configparser.ConfigParser()
-    try_to_add_section_to_config(cache, category)
-    cache.read(cache_path)
-    cache.set(category, str(option), str(value))
-    with open(cache_path, 'w') as cache_file:
-        cache.write(cache_file)
+    write_to_ini_file(category, option, value, cache_path)
 
 
 def read_from_cache(category, option):
     cache_path = f"{get_app_data_folder('')}/cache.ini"
-    cache = configparser.ConfigParser()
-    cache.read(cache_path)
-    return cache.get(category, option)
+    return read_from_ini_file(category, option, cache_path)
 
 
 def does_folder_exist(path):
@@ -186,7 +199,10 @@ def does_folder_exist(path):
 
 
 def get_app_data_folder(folder):
-    app_data_path = os.getenv('APPDATA')
+    if system() == 'Windows':
+        app_data_path = os.getenv('APPDATA')
+    else:
+        app_data_path = os.path.expanduser('~/Documents')
     clocking_path = make_folder_if_it_does_not_exist(app_data_path, 'Clocking')
     return make_folder_if_it_does_not_exist(clocking_path, folder)
 

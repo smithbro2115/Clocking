@@ -39,9 +39,12 @@ class Clock:
     def clock_in(self):
         date_time = datetime.now()
         self.current_time = date_time
-        self.save_row(self.current_time, "0:00:00", timedelta())
-        self.state = True
+        self.add_clock_in_row(self.current_time)
         return date_time
+
+    def add_clock_in_row(self, clock_in_time):
+        self.save_row(clock_in_time, '0:00:00', timedelta())
+        self.state = True
 
     def clock_out(self):
         date_time = datetime.now()
@@ -72,6 +75,14 @@ class Clock:
         row = old_rows[row_number]
         parsed_row = self.parse_row(row)
         parsed_row[column_number] = new_time - timedelta(microseconds=1)
+        try:
+            parsed_row = self.edit_clock_time_of_past(parsed_row, row, row_number, old_rows)
+        except TypeError:
+            parsed_row = self.edit_present_clock_time(parsed_row, new_time)
+            self.edit_row(row_number, old_rows, row)
+        return parsed_row
+
+    def edit_clock_time_of_past(self, parsed_row, row, row_number, old_rows):
         total_time = parsed_row[1] - parsed_row[0]
         if total_time.total_seconds() >= 0:
             self.total_monthly_time -= parsed_row[2]
@@ -82,6 +93,13 @@ class Clock:
             self.edit_row(row_number, old_rows, row)
             return parsed_row
 
+    @staticmethod
+    def edit_present_clock_time(parsed_row, new_time):
+        if new_time > datetime.now():
+            raise RuntimeError("You can't clock into the future")
+        parsed_row = parsed_row.copy()
+        return parsed_row
+
     def delete_row(self, row_number):
         old_rows = get_list_from_csv(self.file_path)
         parsed_row = self.parse_row(old_rows[row_number])
@@ -91,6 +109,7 @@ class Clock:
 
     def reset(self):
         self.total_monthly_time = timedelta()
+        add_file_if_it_does_not_exist(self.file_path)
 
     def load(self):
         self.reset()
@@ -104,10 +123,11 @@ class Clock:
         row[0] = datetime.strptime(row[0], '%Y-%m-%d %H:%M:%S.%f')
         try:
             row[1] = datetime.strptime(row[1], '%Y-%m-%d %H:%M:%S.%f')
+            row[2] = timedelta(days=float(row[2]))
         except ValueError:
             self.state = True
             self.current_time = row[0]
-        row[2] = timedelta(days=float(row[2]))
+            row[2] = timedelta()
         return row
 
     def check_if_clocked_in(self, rows):
@@ -162,7 +182,7 @@ class DateAndTimeContextMenu(QMenu):
         self.edit_action.triggered.connect(lambda: edit_function(self.row, self.column, self.data))
         self.addAction(self.edit_action)
         self.delete_function = QAction("Delete")
-        self.delete_function.triggered.connect(lambda: delete_function(self.item.row()))
+        self.delete_function.triggered.connect(lambda: delete_function(self.row))
         self.addAction(self.delete_function)
         self.setStyleSheet(qdarkstyle.load_stylesheet_pyqt5())
         point.setY(point.y()+38)

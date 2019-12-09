@@ -1,17 +1,19 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'Z:\Employee Folders\Josh\Programs\Clocking\Gui\MainWindow.ui'
+# Form implementation generated from reading ui file 'C:\Users\Josh\PycharmProjects\Clocking\Gui\MainWindow.ui'
 #
-# Created by: PyQt5 UI code generator 5.11.3
+# Created by: PyQt5 UI code generator 5.13.1
 #
 # WARNING! All changes made in this file will be lost!
 
+
 from PyQt5 import QtCore, QtGui, QtWidgets
+
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(965, 613)
+        MainWindow.resize(965, 603)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.gridLayout = QtWidgets.QGridLayout(self.centralwidget)
@@ -180,6 +182,8 @@ class Ui_MainWindow(object):
         self.menuButtons.setObjectName("menuButtons")
         self.menuEdit = QtWidgets.QMenu(self.menubar)
         self.menuEdit.setObjectName("menuEdit")
+        self.menuEmailing = QtWidgets.QMenu(self.menubar)
+        self.menuEmailing.setObjectName("menuEmailing")
         MainWindow.setMenuBar(self.menubar)
         self.actionAdd_Button = QtWidgets.QAction(MainWindow)
         self.actionAdd_Button.setObjectName("actionAdd_Button")
@@ -231,8 +235,23 @@ class Ui_MainWindow(object):
         self.actionClock.setObjectName("actionClock")
         self.actionAssign_Buttons = QtWidgets.QAction(MainWindow)
         self.actionAssign_Buttons.setObjectName("actionAssign_Buttons")
+        self.actionSet_Email_Template = QtWidgets.QAction(MainWindow)
+        self.actionSet_Email_Template.setObjectName("actionSet_Email_Template")
+        self.actionAssign_Days_to_Send_Emails = QtWidgets.QAction(MainWindow)
+        self.actionAssign_Days_to_Send_Emails.setObjectName("actionAssign_Days_to_Send_Emails")
+        self.actionSet_Default_Invoice_Path = QtWidgets.QAction(MainWindow)
+        self.actionSet_Default_Invoice_Path.setObjectName("actionSet_Default_Invoice_Path")
+        self.actionSetup_Emailing = QtWidgets.QAction(MainWindow)
+        self.actionSetup_Emailing.setObjectName("actionSetup_Emailing")
+        self.actionSet_Users_Invoices_to_Email = QtWidgets.QAction(MainWindow)
+        self.actionSet_Users_Invoices_to_Email.setObjectName("actionSet_Users_Invoices_to_Email")
+        self.actionEMail_Now = QtWidgets.QAction(MainWindow)
+        self.actionEMail_Now.setObjectName("actionEMail_Now")
+        self.actionSet_Company = QtWidgets.QAction(MainWindow)
+        self.actionSet_Company.setObjectName("actionSet_Company")
         self.menuFile.addAction(self.actionExport_Invoice)
         self.menuFile.addAction(self.actionExport_All_Invoices)
+        self.menuFile.addAction(self.actionSet_Default_Invoice_Path)
         self.menuFile.addSeparator()
         self.menuFile.addAction(self.actionPreferences)
         self.menuButtons.addAction(self.actionAdd_Button)
@@ -245,9 +264,19 @@ class Ui_MainWindow(object):
         self.menuEdit.addAction(self.actionEdit_Category)
         self.menuEdit.addAction(self.actionDelete_Category)
         self.menuEdit.addSeparator()
+        self.menuEdit.addAction(self.actionSet_Company)
+        self.menuEdit.addSeparator()
         self.menuEdit.addAction(self.actionClock)
+        self.menuEmailing.addAction(self.actionEMail_Now)
+        self.menuEmailing.addSeparator()
+        self.menuEmailing.addAction(self.actionSetup_Emailing)
+        self.menuEmailing.addSeparator()
+        self.menuEmailing.addAction(self.actionSet_Email_Template)
+        self.menuEmailing.addAction(self.actionAssign_Days_to_Send_Emails)
+        self.menuEmailing.addAction(self.actionSet_Users_Invoices_to_Email)
         self.menubar.addAction(self.menuFile.menuAction())
         self.menubar.addAction(self.menuEdit.menuAction())
+        self.menubar.addAction(self.menuEmailing.menuAction())
         self.menubar.addAction(self.menuButtons.menuAction())
 
         self.retranslateUi(MainWindow)
@@ -269,6 +298,7 @@ class Ui_MainWindow(object):
         self.menuFile.setTitle(_translate("MainWindow", "File"))
         self.menuButtons.setTitle(_translate("MainWindow", "Buttons"))
         self.menuEdit.setTitle(_translate("MainWindow", "Edit"))
+        self.menuEmailing.setTitle(_translate("MainWindow", "Emailing"))
         self.actionAdd_Button.setText(_translate("MainWindow", "Add Button"))
         self.actionExport_Invoice.setText(_translate("MainWindow", "Export Invoice"))
         self.actionExport_Invoice.setShortcut(_translate("MainWindow", "Ctrl+I"))
@@ -297,6 +327,12 @@ class Ui_MainWindow(object):
         self.actionExport_All_Invoices.setText(_translate("MainWindow", "Export All Invoices"))
         self.actionExport_All_Invoices.setShortcut(_translate("MainWindow", "Ctrl+Shift+I"))
         self.actionClock.setText(_translate("MainWindow", "Clock"))
-        self.actionClock.setShortcut(_translate("MainWindow", "Space"))
+        self.actionClock.setShortcut(_translate("MainWindow", "Ctrl+Space"))
         self.actionAssign_Buttons.setText(_translate("MainWindow", "Assign Buttons"))
-
+        self.actionSet_Email_Template.setText(_translate("MainWindow", "Set Email Template"))
+        self.actionAssign_Days_to_Send_Emails.setText(_translate("MainWindow", "Assign Days to Send Emails"))
+        self.actionSet_Default_Invoice_Path.setText(_translate("MainWindow", "Set Default Invoice Path"))
+        self.actionSetup_Emailing.setText(_translate("MainWindow", "Set Emailing"))
+        self.actionSet_Users_Invoices_to_Email.setText(_translate("MainWindow", "Set Users Invoices to Email"))
+        self.actionEMail_Now.setText(_translate("MainWindow", "Email Now"))
+        self.actionSet_Company.setText(_translate("MainWindow", "Set Company"))

@@ -1,0 +1,376 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Dialog</class>
+ <widget class="QDialog" name="Dialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>374</width>
+    <height>271</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Set Dates To Email Invoices</string>
+  </property>
+  <layout class="QGridLayout" name="gridLayout">
+   <item row="2" column="1">
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="0">
+    <widget class="QCheckBox" name="compensateCheckBox">
+     <property name="text">
+      <string>Compensate for Weekends</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="0" colspan="2">
+    <widget class="QWidget" name="widget" native="true">
+     <layout class="QGridLayout" name="gridLayout_2">
+      <property name="leftMargin">
+       <number>0</number>
+      </property>
+      <property name="topMargin">
+       <number>0</number>
+      </property>
+      <property name="rightMargin">
+       <number>0</number>
+      </property>
+      <property name="bottomMargin">
+       <number>0</number>
+      </property>
+      <item row="0" column="0">
+       <widget class="QTableWidget" name="tableWidget">
+        <property name="verticalScrollBarPolicy">
+         <enum>Qt::ScrollBarAsNeeded</enum>
+        </property>
+        <property name="horizontalScrollBarPolicy">
+         <enum>Qt::ScrollBarAsNeeded</enum>
+        </property>
+        <property name="alternatingRowColors">
+         <bool>false</bool>
+        </property>
+        <property name="selectionMode">
+         <enum>QAbstractItemView::MultiSelection</enum>
+        </property>
+        <property name="cornerButtonEnabled">
+         <bool>false</bool>
+        </property>
+        <attribute name="horizontalHeaderVisible">
+         <bool>false</bool>
+        </attribute>
+        <attribute name="horizontalHeaderCascadingSectionResizes">
+         <bool>false</bool>
+        </attribute>
+        <attribute name="horizontalHeaderHighlightSections">
+         <bool>true</bool>
+        </attribute>
+        <attribute name="verticalHeaderVisible">
+         <bool>false</bool>
+        </attribute>
+        <attribute name="verticalHeaderCascadingSectionResizes">
+         <bool>false</bool>
+        </attribute>
+        <attribute name="verticalHeaderStretchLastSection">
+         <bool>false</bool>
+        </attribute>
+        <row>
+         <property name="text">
+          <string>New Row</string>
+         </property>
+        </row>
+        <row>
+         <property name="text">
+          <string>1</string>
+         </property>
+        </row>
+        <row>
+         <property name="text">
+          <string>2</string>
+         </property>
+        </row>
+        <row>
+         <property name="text">
+          <string>3</string>
+         </property>
+        </row>
+        <row>
+         <property name="text">
+          <string>4</string>
+         </property>
+        </row>
+        <column>
+         <property name="text">
+          <string>New Column</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>1</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>2</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>3</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>4</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>5</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>6</string>
+         </property>
+        </column>
+        <item row="0" column="0">
+         <property name="text">
+          <string>1st</string>
+         </property>
+        </item>
+        <item row="0" column="1">
+         <property name="text">
+          <string>2nd</string>
+         </property>
+        </item>
+        <item row="0" column="2">
+         <property name="text">
+          <string>3rd</string>
+         </property>
+        </item>
+        <item row="0" column="3">
+         <property name="text">
+          <string>4th</string>
+         </property>
+        </item>
+        <item row="0" column="4">
+         <property name="text">
+          <string>5th</string>
+         </property>
+        </item>
+        <item row="0" column="5">
+         <property name="text">
+          <string>6th</string>
+         </property>
+        </item>
+        <item row="0" column="6">
+         <property name="text">
+          <string>7th</string>
+         </property>
+        </item>
+        <item row="1" column="0">
+         <property name="text">
+          <string>8th</string>
+         </property>
+        </item>
+        <item row="1" column="1">
+         <property name="text">
+          <string>9th</string>
+         </property>
+        </item>
+        <item row="1" column="2">
+         <property name="text">
+          <string>10th</string>
+         </property>
+        </item>
+        <item row="1" column="3">
+         <property name="text">
+          <string>11th</string>
+         </property>
+        </item>
+        <item row="1" column="4">
+         <property name="text">
+          <string>12th</string>
+         </property>
+        </item>
+        <item row="1" column="5">
+         <property name="text">
+          <string>13th</string>
+         </property>
+        </item>
+        <item row="1" column="6">
+         <property name="text">
+          <string>14th</string>
+         </property>
+        </item>
+        <item row="2" column="0">
+         <property name="text">
+          <string>15th</string>
+         </property>
+        </item>
+        <item row="2" column="1">
+         <property name="text">
+          <string>16th</string>
+         </property>
+        </item>
+        <item row="2" column="2">
+         <property name="text">
+          <string>17th</string>
+         </property>
+        </item>
+        <item row="2" column="3">
+         <property name="text">
+          <string>18th</string>
+         </property>
+        </item>
+        <item row="2" column="4">
+         <property name="text">
+          <string>19th</string>
+         </property>
+        </item>
+        <item row="2" column="5">
+         <property name="text">
+          <string>20th</string>
+         </property>
+        </item>
+        <item row="2" column="6">
+         <property name="text">
+          <string>21st</string>
+         </property>
+        </item>
+        <item row="3" column="0">
+         <property name="text">
+          <string>22nd</string>
+         </property>
+        </item>
+        <item row="3" column="1">
+         <property name="text">
+          <string>23rd</string>
+         </property>
+        </item>
+        <item row="3" column="2">
+         <property name="text">
+          <string>24th</string>
+         </property>
+        </item>
+        <item row="3" column="3">
+         <property name="text">
+          <string>25th</string>
+         </property>
+        </item>
+        <item row="3" column="4">
+         <property name="text">
+          <string>26th</string>
+         </property>
+        </item>
+        <item row="3" column="5">
+         <property name="text">
+          <string>27th</string>
+         </property>
+        </item>
+        <item row="3" column="6">
+         <property name="text">
+          <string>28th</string>
+         </property>
+        </item>
+        <item row="4" column="0">
+         <property name="text">
+          <string>29th</string>
+         </property>
+        </item>
+        <item row="4" column="1">
+         <property name="text">
+          <string>30th</string>
+         </property>
+        </item>
+        <item row="4" column="2">
+         <property name="text">
+          <string>31st</string>
+         </property>
+        </item>
+        <item row="4" column="3">
+         <property name="text">
+          <string/>
+         </property>
+         <property name="flags">
+          <set>ItemIsDragEnabled|ItemIsUserCheckable|ItemIsEnabled</set>
+         </property>
+        </item>
+        <item row="4" column="4">
+         <property name="flags">
+          <set>ItemIsDragEnabled|ItemIsUserCheckable|ItemIsEnabled</set>
+         </property>
+        </item>
+        <item row="4" column="5">
+         <property name="flags">
+          <set>ItemIsDragEnabled|ItemIsUserCheckable|ItemIsEnabled</set>
+         </property>
+        </item>
+        <item row="4" column="6">
+         <property name="flags">
+          <set>ItemIsDragEnabled|ItemIsUserCheckable|ItemIsEnabled</set>
+         </property>
+        </item>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item row="0" column="0" colspan="2">
+    <widget class="QLabel" name="label">
+     <property name="font">
+      <font>
+       <pointsize>9</pointsize>
+      </font>
+     </property>
+     <property name="text">
+      <string>Select all dates on which you wish to send your invoices</string>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>accepted()</signal>
+   <receiver>Dialog</receiver>
+   <slot>accept()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>248</x>
+     <y>254</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>157</x>
+     <y>274</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>rejected()</signal>
+   <receiver>Dialog</receiver>
+   <slot>reject()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>316</x>
+     <y>260</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>286</x>
+     <y>274</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>

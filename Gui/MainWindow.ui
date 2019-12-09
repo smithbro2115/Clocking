@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>965</width>
-    <height>613</height>
+    <height>603</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -298,6 +298,7 @@
     </property>
     <addaction name="actionExport_Invoice"/>
     <addaction name="actionExport_All_Invoices"/>
+    <addaction name="actionSet_Default_Invoice_Path"/>
     <addaction name="separator"/>
     <addaction name="actionPreferences"/>
    </widget>
@@ -320,10 +321,25 @@
     <addaction name="actionEdit_Category"/>
     <addaction name="actionDelete_Category"/>
     <addaction name="separator"/>
+    <addaction name="actionSet_Company"/>
+    <addaction name="separator"/>
     <addaction name="actionClock"/>
+   </widget>
+   <widget class="QMenu" name="menuEmailing">
+    <property name="title">
+     <string>Emailing</string>
+    </property>
+    <addaction name="actionEMail_Now"/>
+    <addaction name="separator"/>
+    <addaction name="actionSetup_Emailing"/>
+    <addaction name="separator"/>
+    <addaction name="actionSet_Email_Template"/>
+    <addaction name="actionAssign_Days_to_Send_Emails"/>
+    <addaction name="actionSet_Users_Invoices_to_Email"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
+   <addaction name="menuEmailing"/>
    <addaction name="menuButtons"/>
   </widget>
   <action name="actionAdd_Button">
@@ -475,7 +491,7 @@
     <string>Clock</string>
    </property>
    <property name="shortcut">
-    <string>Space</string>
+    <string>Ctrl+Space</string>
    </property>
    <property name="shortcutVisibleInContextMenu">
     <bool>true</bool>
@@ -484,6 +500,41 @@
   <action name="actionAssign_Buttons">
    <property name="text">
     <string>Assign Buttons</string>
+   </property>
+  </action>
+  <action name="actionSet_Email_Template">
+   <property name="text">
+    <string>Set Email Template</string>
+   </property>
+  </action>
+  <action name="actionAssign_Days_to_Send_Emails">
+   <property name="text">
+    <string>Assign Days to Send Emails</string>
+   </property>
+  </action>
+  <action name="actionSet_Default_Invoice_Path">
+   <property name="text">
+    <string>Set Default Invoice Path</string>
+   </property>
+  </action>
+  <action name="actionSetup_Emailing">
+   <property name="text">
+    <string>Set Emailing</string>
+   </property>
+  </action>
+  <action name="actionSet_Users_Invoices_to_Email">
+   <property name="text">
+    <string>Set Users Invoices to Email</string>
+   </property>
+  </action>
+  <action name="actionEMail_Now">
+   <property name="text">
+    <string>Email Now</string>
+   </property>
+  </action>
+  <action name="actionSet_Company">
+   <property name="text">
+    <string>Set Company</string>
    </property>
   </action>
  </widget>
