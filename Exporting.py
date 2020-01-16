@@ -8,7 +8,7 @@ from PyQt5 import QtWidgets
 import os
 
 
-invoice_template_path = resource_path("Invoice.xlsx")
+invoice_template_path = resource_path("Time Sheet.xlsx")
 align = styles.Alignment(horizontal='left', vertical='top', wrap_text=True)
 font = styles.Font(size=12)
 
@@ -103,7 +103,7 @@ def make_new_excel_from_template(user, path=None):
 
 def get_file_invoice_name(user):
     date = datetime.now()
-    return f"{user.first_name}_{user.last_name}_Invoice" \
+    return f"{user.first_name}_{user.last_name}_Time_Sheet" \
         f"_{date.strftime('%B')}_{date.day}_{date.year}.xlsx"
 
 
